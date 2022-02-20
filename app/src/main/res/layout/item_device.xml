@@ -12,10 +12,6 @@
     </data>
 
     <com.google.android.material.card.MaterialCardView
-        app:strokeColor="@color/gray"
-        app:strokeWidth="1dp"
-        app:cardCornerRadius="0dp"
-        app:cardElevation="0dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
@@ -32,19 +28,14 @@
 
             <TextView
                 android:id="@+id/name"
-                android:layout_marginTop="@dimen/margin_large"
-                android:layout_marginStart="@dimen/margin_large"
-                android:paddingBottom="@dimen/margin_large"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@{device.name}"
-                android:textColor="@color/gray"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/status"
-                android:layout_marginStart="@dimen/margin_large"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@{device.status.toString()}"

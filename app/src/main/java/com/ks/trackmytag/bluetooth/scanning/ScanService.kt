@@ -6,6 +6,7 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanSettings
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 
 class ScanService(private val bluetoothManager: BluetoothManager?) {
 
@@ -15,6 +16,7 @@ class ScanService(private val bluetoothManager: BluetoothManager?) {
     private var bluetoothScanner: BluetoothLeScanner? = null
     private var settings: ScanSettings? = null
     lateinit var onScanFinishedListener: OnScanFinishedListener
+    private var isScanActive = false
 
     fun setupBle() {
         bluetoothManager?.let {
@@ -28,23 +30,27 @@ class ScanService(private val bluetoothManager: BluetoothManager?) {
 
 
     fun scan() {
-        if(isBleInitialized()) {
+        if(isBleInitialized() && !isScanActive) {
             startScan()
             Handler(Looper.getMainLooper()).postDelayed({ stopScan() }, scanningTime)
         }
     }
 
     private fun startScan() {
+        isScanActive = true
+        onScanFinishedListener.onScanStarted()
         scanCallback.foundDevices.clear()
         bluetoothScanner?.startScan(null, settings, scanCallback)
     }
 
     private fun stopScan() {
-        bluetoothScanner?.stopScan(scanCallback)
+        isScanActive = false
         onScanFinishedListener.onScanFinished(scanCallback.foundDevices, scanCallback.errorCode)
+        bluetoothScanner?.stopScan(scanCallback)
     }
 }
 
-class OnScanFinishedListener(val onScanFinishedListener: (devices: MutableList<BluetoothDevice>?, errorCode: Int?) -> Unit) {
-    fun onScanFinished(devices: MutableList<BluetoothDevice>?, errorCode: Int?) = onScanFinishedListener(devices, errorCode)
+abstract class OnScanFinishedListener {
+    abstract fun onScanStarted()
+    abstract fun onScanFinished(devices: MutableList<BluetoothDevice>?, errorCode: Int?)
 }

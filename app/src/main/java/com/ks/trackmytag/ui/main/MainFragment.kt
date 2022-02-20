@@ -42,9 +42,16 @@ class MainFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-        viewModel.scanService.onScanFinishedListener = (OnScanFinishedListener { devices, errorCode ->
-            displayDevices(devices, errorCode)
-        })
+        viewModel.scanService.onScanFinishedListener = object: OnScanFinishedListener() {
+            override fun onScanStarted() {
+                Toast.makeText(context, "Rozpoczęto skanowanie", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onScanFinished(devices: MutableList<BluetoothDevice>?, errorCode: Int?) {
+                Toast.makeText(context, "Zakończono skanowanie", Toast.LENGTH_SHORT).show()
+                displayDevices(devices, errorCode)
+            }
+        }
 
         val adapter = DevicesAdapter(ClickListener { device ->
             /// viewModel.onCardClicked(card)
@@ -131,11 +138,17 @@ class MainFragment : Fragment() {
         if (!devices.isNullOrEmpty()) {
             val alertDialogBuilder = AlertDialog.Builder(requireContext())
             alertDialogBuilder.setTitle("Wybierz urządzenie")
-            alertDialogBuilder.setItems(devices.map { it.address }.toTypedArray()) { dialog, which ->
+            alertDialogBuilder.setItems(formatDisplayedDeviceData(devices)) { dialog, which -> //devices.map { it.address }.toTypedArray()
                 chooseDevice(devices.get(which), viewModel)
             }
             alertDialogBuilder.create().show()
-        } else Toast.makeText(context, "Nie znaleziono urządzeń", Toast.LENGTH_SHORT).show()
+        } else Toast.makeText(context, "Nie znaleziono nowych urządzeń", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun formatDisplayedDeviceData(devices: MutableList<BluetoothDevice>?): Array<CharSequence> {
+        var items: Array<CharSequence> = emptyArray()
+        devices?.forEach { items = items.plus(getString(R.string.device_data, it.name, it.address)) }
+        return items
     }
 
     private fun chooseDevice(device: BluetoothDevice, viewModel: MainViewModel) {

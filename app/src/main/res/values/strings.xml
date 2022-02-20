@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Track My Tag</string>
     <string name="title_activity_settings">SettingsActivity</string>
+    <string name="device_data">Name: %1$s\nAddress: %2$s</string>
 
 
 
