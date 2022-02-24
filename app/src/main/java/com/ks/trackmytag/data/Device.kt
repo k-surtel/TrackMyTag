@@ -7,9 +7,9 @@ data class Device(
     var name: String
 ) {
     val address: String = bluetoothDevice.address
-    var status: Status = Status.DISCONNECTED
+    var state: State = State.DISCONNECTED
 
-    enum class Status {
+    enum class State {
         DISCONNECTED,
         CONNECTED
     }

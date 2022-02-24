@@ -8,7 +8,6 @@ import android.util.Log
 class ScanCallback : ScanCallback() {
 
     val foundDevices = mutableListOf<BluetoothDevice>()
-    //TODO trzeba będzie sprawdzić czy found nie był już parowany i zapisany
     var errorCode: Int? = null
 
     override fun onScanResult(callbackType: Int, result: ScanResult?) {

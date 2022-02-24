@@ -3,10 +3,12 @@ package com.ks.trackmytag.ui.main
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothProfile
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -21,6 +23,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import com.ks.trackmytag.R
+import com.ks.trackmytag.bluetooth.connection.OnConnectionStateChangeListener
 import com.ks.trackmytag.databinding.FragmentMainBinding
 import com.ks.trackmytag.bluetooth.scanning.OnScanFinishedListener
 
@@ -42,7 +45,7 @@ class MainFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-        viewModel.scanService.onScanFinishedListener = object: OnScanFinishedListener() {
+        viewModel.setOnScanFinishedListener(object: OnScanFinishedListener() {
             override fun onScanStarted() {
                 Toast.makeText(context, "Rozpoczęto skanowanie", Toast.LENGTH_SHORT).show()
             }
@@ -51,14 +54,24 @@ class MainFragment : Fragment() {
                 Toast.makeText(context, "Zakończono skanowanie", Toast.LENGTH_SHORT).show()
                 displayDevices(devices, errorCode)
             }
-        }
+        })
 
         val adapter = DevicesAdapter(ClickListener { device ->
             /// viewModel.onCardClicked(card)
         })
         binding.devices.adapter = adapter
 
-        viewModel.devices.observe(viewLifecycleOwner) { it?.let { adapter.submitList(it) } }
+        viewModel.devices.observe(viewLifecycleOwner) {
+            it?.let {
+                adapter.submitList(it)
+            }
+        }
+
+        viewModel.deviceChanged.observe(viewLifecycleOwner) {
+            it?.let {
+                adapter.notifyItemChanged(it)
+            }
+        }
 
         loadSettings()
 
@@ -135,11 +148,18 @@ class MainFragment : Fragment() {
             //TODO: display error message
         }
 
+        var devicesList = mutableListOf<BluetoothDevice>()
+
         if (!devices.isNullOrEmpty()) {
+            devicesList = viewModel.sortDevices(devices)
+        }
+
+        if (!devicesList.isNullOrEmpty()) {
+
             val alertDialogBuilder = AlertDialog.Builder(requireContext())
             alertDialogBuilder.setTitle("Wybierz urządzenie")
-            alertDialogBuilder.setItems(formatDisplayedDeviceData(devices)) { dialog, which -> //devices.map { it.address }.toTypedArray()
-                chooseDevice(devices.get(which), viewModel)
+            alertDialogBuilder.setItems(formatDisplayedDeviceData(devicesList)) { dialog, which ->
+                chooseDevice(devicesList.get(which), viewModel)
             }
             alertDialogBuilder.create().show()
         } else Toast.makeText(context, "Nie znaleziono nowych urządzeń", Toast.LENGTH_SHORT).show()
