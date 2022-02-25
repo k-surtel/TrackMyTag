@@ -1,14 +1,13 @@
 package com.ks.trackmytag.ui.main
 
+import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothProfile
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -17,20 +16,21 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.PermissionChecker
+import androidx.core.content.PermissionChecker.checkSelfPermission
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import com.ks.trackmytag.R
-import com.ks.trackmytag.bluetooth.connection.OnConnectionStateChangeListener
 import com.ks.trackmytag.databinding.FragmentMainBinding
-import com.ks.trackmytag.bluetooth.scanning.OnScanFinishedListener
+import com.ks.trackmytag.bluetooth.scanning.OnScanListener
 
 
 class MainFragment : Fragment() {
 
-    //private val PERMISSION_REQUEST_FINE_LOCATION = 1
+    private val PERMISSION_REQUEST_FINE_LOCATION = 1
 
     private lateinit var viewModel: MainViewModel
 
@@ -45,14 +45,14 @@ class MainFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-        viewModel.setOnScanFinishedListener(object: OnScanFinishedListener() {
+        viewModel.setOnScanListener(object: OnScanListener() {
             override fun onScanStarted() {
                 Toast.makeText(context, "Rozpoczęto skanowanie", Toast.LENGTH_SHORT).show()
             }
 
             override fun onScanFinished(devices: MutableList<BluetoothDevice>?, errorCode: Int?) {
                 Toast.makeText(context, "Zakończono skanowanie", Toast.LENGTH_SHORT).show()
-                displayDevices(devices, errorCode)
+                displayDevices(viewModel.sortNewDevices(devices), errorCode)
             }
         })
 
@@ -77,7 +77,7 @@ class MainFragment : Fragment() {
 
         if (isBleSupported()) viewModel.scanService.setupBle()
         if (!viewModel.scanService.isBleInitialized()) requestBluetoothEnable()
-        //requestLocationPermission()
+        requestLocationPermission()
 
         return binding.root
     }
@@ -96,7 +96,6 @@ class MainFragment : Fragment() {
 
     private fun loadSettings() {
         val preferences = PreferenceManager.getDefaultSharedPreferences(context)
-
         viewModel.scanService.scanningTime = preferences.getString("scan_time", "5000")!!.toLong()
 
         preferences.registerOnSharedPreferenceChangeListener { function, key ->
@@ -119,56 +118,34 @@ class MainFragment : Fragment() {
     }
 
     private fun requestBluetoothEnable() {
-        val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-        //startActivityForResult(enableBtIntent, 1) //deprecated
-
         val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 // operations..
             }
         }
-        resultLauncher.launch(enableBtIntent)
+        resultLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
     }
 
-//    private fun requestLocationPermission() {
-//        if ((checkSelfPermission(
-//                requireContext(),
-//                Manifest.permission.ACCESS_COARSE_LOCATION
-//            ) == PermissionChecker.PERMISSION_DENIED)
-//        ) {
-//            requestPermissions(
-//                arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
-//                PERMISSION_REQUEST_FINE_LOCATION
-//            )
-//        }
-//    }
+    private fun requestLocationPermission() {
+        if ((checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PermissionChecker.PERMISSION_DENIED)) {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), PERMISSION_REQUEST_FINE_LOCATION)
+        }
+    }
 
-    private fun displayDevices(devices: MutableList<BluetoothDevice>?, errorCode: Int?) {
+    private fun displayDevices(newDevices: MutableList<BluetoothDevice>?, errorCode: Int?) {
         if (errorCode != null) {
             //TODO: display error message
         }
 
-        var devicesList = mutableListOf<BluetoothDevice>()
-
-        if (!devices.isNullOrEmpty()) {
-            devicesList = viewModel.sortDevices(devices)
-        }
-
-        if (!devicesList.isNullOrEmpty()) {
+        if (!newDevices.isNullOrEmpty()) {
 
             val alertDialogBuilder = AlertDialog.Builder(requireContext())
             alertDialogBuilder.setTitle("Wybierz urządzenie")
-            alertDialogBuilder.setItems(formatDisplayedDeviceData(devicesList)) { dialog, which ->
-                chooseDevice(devicesList.get(which), viewModel)
+            alertDialogBuilder.setItems(viewModel.formatDisplayedDeviceData(newDevices)) { dialog, which ->
+                chooseDevice(newDevices.get(which), viewModel)
             }
             alertDialogBuilder.create().show()
         } else Toast.makeText(context, "Nie znaleziono nowych urządzeń", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun formatDisplayedDeviceData(devices: MutableList<BluetoothDevice>?): Array<CharSequence> {
-        var items: Array<CharSequence> = emptyArray()
-        devices?.forEach { items = items.plus(getString(R.string.device_data, it.name, it.address)) }
-        return items
     }
 
     private fun chooseDevice(device: BluetoothDevice, viewModel: MainViewModel) {

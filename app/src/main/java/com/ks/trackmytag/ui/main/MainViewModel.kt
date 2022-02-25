@@ -1,19 +1,27 @@
 package com.ks.trackmytag.ui.main
 
+import android.app.Activity
 import android.app.Application
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.content.Context
+import android.content.Intent
+import android.provider.Settings.Global.getString
 import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.preference.PreferenceManager
+import com.ks.trackmytag.R
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.bluetooth.scanning.ScanService
 import com.ks.trackmytag.bluetooth.connection.ConnectionService
 import com.ks.trackmytag.bluetooth.connection.OnConnectionStateChangeListener
-import com.ks.trackmytag.bluetooth.scanning.OnScanFinishedListener
+import com.ks.trackmytag.bluetooth.scanning.OnScanListener
+import kotlinx.coroutines.withContext
 
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -54,11 +62,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun scan() { scanService.scan() }
 
-    fun sortDevices(devices: MutableList<BluetoothDevice>): MutableList<BluetoothDevice> {
-        devices.forEach { device ->
-            if(_devices.value!!.any { it.bluetoothDevice == device }) devices.remove(device)
+    fun sortNewDevices(newDevices: MutableList<BluetoothDevice>?): MutableList<BluetoothDevice>? {
+        newDevices?.forEach { device ->
+            if(_devices.value!!.any { it.bluetoothDevice == device }) newDevices.remove(device)
         }
-        return devices
+        return newDevices
+    }
+
+    fun formatDisplayedDeviceData(devices: MutableList<BluetoothDevice>): Array<CharSequence> {
+        var items: Array<CharSequence> = emptyArray()
+        devices.forEach { items = items.plus(getApplication<Application>().resources.getString(R.string.device_data, it.name, it.address)) }
+        return items
     }
 
     fun addDevice(device: BluetoothDevice, name: String) {
@@ -69,7 +83,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun setOnScanFinishedListener(listener: OnScanFinishedListener) {
-        scanService.onScanFinishedListener = listener
+    fun setOnScanListener(listener: OnScanListener) {
+        scanService.onScanListener = listener
     }
 }

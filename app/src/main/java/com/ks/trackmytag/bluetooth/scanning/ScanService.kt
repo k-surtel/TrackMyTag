@@ -1,5 +1,6 @@
 package com.ks.trackmytag.bluetooth.scanning
 
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
@@ -13,23 +14,26 @@ class ScanService(private val bluetoothManager: BluetoothManager?) {
     var scanningTime: Long = 5000
 
     private var scanCallback: ScanCallback = ScanCallback()
+    private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothScanner: BluetoothLeScanner? = null
     private var settings: ScanSettings? = null
-    lateinit var onScanFinishedListener: OnScanFinishedListener
+    lateinit var onScanListener: OnScanListener
     private var isScanActive = false
 
     fun setupBle() {
         bluetoothManager?.let {
+            bluetoothAdapter = it.adapter
             bluetoothScanner = it.adapter.bluetoothLeScanner
             settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_POWER).build()
         }
     }
 
     fun isBleInitialized() =
-        bluetoothScanner != null && settings != null
+        bluetoothScanner != null && settings != null && bluetoothAdapter!!.isEnabled
 
 
     fun scan() {
+        Log.d("ScanService", "scanning time = " + scanningTime)
         if(isBleInitialized() && !isScanActive) {
             startScan()
             Handler(Looper.getMainLooper()).postDelayed({ stopScan() }, scanningTime)
@@ -38,19 +42,19 @@ class ScanService(private val bluetoothManager: BluetoothManager?) {
 
     private fun startScan() {
         isScanActive = true
-        onScanFinishedListener.onScanStarted()
+        onScanListener.onScanStarted()
         scanCallback.foundDevices.clear()
         bluetoothScanner?.startScan(null, settings, scanCallback)
     }
 
     private fun stopScan() {
         isScanActive = false
-        onScanFinishedListener.onScanFinished(scanCallback.foundDevices, scanCallback.errorCode)
+        onScanListener.onScanFinished(scanCallback.foundDevices, scanCallback.errorCode)
         bluetoothScanner?.stopScan(scanCallback)
     }
 }
 
-abstract class OnScanFinishedListener {
+abstract class OnScanListener {
     abstract fun onScanStarted()
     abstract fun onScanFinished(devices: MutableList<BluetoothDevice>?, errorCode: Int?)
 }
