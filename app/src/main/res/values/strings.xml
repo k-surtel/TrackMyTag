@@ -1,27 +1,24 @@
 <resources>
-    <string name="app_name">Track My Tag</string>
+    <string name="app_name">TrackMyTag</string>
     <string name="title_activity_settings">SettingsActivity</string>
     <string name="device_data">Name: %1$s\nAddress: %2$s</string>
+    <string name="scanning_started">Scanning has been started</string>
+    <string name="scanning_finished">Scanning has finished</string>
+    <string name="no_ble">No BLE</string>
+    <string name="no_ble_support">This device doesn\'t support Bluetooth Low Energy technology!</string>
+    <string name="choose_device">Choose device</string>
+    <string name="no_devices_found">No devices found!</string>
+    <string name="name_device">Name your device</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="add_device">Add device</string>
+    <string name="settings">Settings</string>
+    <string name="scanning_time">Scanning time</string>
+    <string name="scanning">Scanning</string>
+    <string name="two_seconds">2 secnods</string>
+    <string name="five_seconds">5 seconds</string>
+    <string name="ten_seconds">10 seconds</string>
 
-
-
-
-
-
-
-
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
-
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
-
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 </resources>

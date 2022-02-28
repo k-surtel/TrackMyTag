@@ -1,8 +1,8 @@
 <resources>
     <string-array name="scan_time_entries">
-        <item>2 seconds</item>
-        <item>5 seconds</item>
-        <item>10 seconds</item>
+        <item>@string/two_seconds</item>
+        <item>@string/five_seconds</item>
+        <item>@string/ten_seconds</item>
     </string-array>
 
     <string-array name="scan_time_values">

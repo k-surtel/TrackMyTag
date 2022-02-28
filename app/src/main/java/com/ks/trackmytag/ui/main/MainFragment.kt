@@ -47,11 +47,11 @@ class MainFragment : Fragment() {
 
         viewModel.setOnScanListener(object: OnScanListener() {
             override fun onScanStarted() {
-                Toast.makeText(context, "Rozpoczęto skanowanie", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.scanning_started, Toast.LENGTH_SHORT).show()
             }
 
             override fun onScanFinished(devices: MutableList<BluetoothDevice>?, errorCode: Int?) {
-                Toast.makeText(context, "Zakończono skanowanie", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.scanning_finished, Toast.LENGTH_SHORT).show()
                 displayDevices(viewModel.sortNewDevices(devices), errorCode)
             }
         })
@@ -62,15 +62,11 @@ class MainFragment : Fragment() {
         binding.devices.adapter = adapter
 
         viewModel.devices.observe(viewLifecycleOwner) {
-            it?.let {
-                adapter.submitList(it)
-            }
+            it?.let { adapter.submitList(it) }
         }
 
         viewModel.deviceChanged.observe(viewLifecycleOwner) {
-            it?.let {
-                adapter.notifyItemChanged(it)
-            }
+            it?.let { adapter.notifyItemChanged(it) }
         }
 
         loadSettings()
@@ -108,8 +104,8 @@ class MainFragment : Fragment() {
     private fun isBleSupported(): Boolean {
         if (!requireActivity().packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             val alertBuilder = AlertDialog.Builder(requireContext())
-            alertBuilder.setTitle("Brak BLE")
-            alertBuilder.setMessage("To urządzenie nie wspiera technologii Bluetooth Low Energy.")
+            alertBuilder.setTitle(R.string.no_ble)
+            alertBuilder.setMessage(R.string.no_ble_support)
             alertBuilder.setPositiveButton(android.R.string.ok, null)
             alertBuilder.setOnDismissListener { requireActivity().finish() }
             alertBuilder.show()
@@ -140,24 +136,24 @@ class MainFragment : Fragment() {
         if (!newDevices.isNullOrEmpty()) {
 
             val alertDialogBuilder = AlertDialog.Builder(requireContext())
-            alertDialogBuilder.setTitle("Wybierz urządzenie")
+            alertDialogBuilder.setTitle(R.string.choose_device)
             alertDialogBuilder.setItems(viewModel.formatDisplayedDeviceData(newDevices)) { dialog, which ->
                 chooseDevice(newDevices.get(which), viewModel)
             }
             alertDialogBuilder.create().show()
-        } else Toast.makeText(context, "Nie znaleziono nowych urządzeń", Toast.LENGTH_SHORT).show()
+        } else Toast.makeText(context, R.string.no_devices_found, Toast.LENGTH_SHORT).show()
     }
 
     private fun chooseDevice(device: BluetoothDevice, viewModel: MainViewModel) {
         val alertDialogBuilder = AlertDialog.Builder(requireContext())
-        alertDialogBuilder.setTitle("Podaj nazwę urządzenia")
+        alertDialogBuilder.setTitle(R.string.name_device)
         val input = EditText(context)
         input.inputType = InputType.TYPE_CLASS_TEXT
         alertDialogBuilder.setView(input)
-        alertDialogBuilder.setPositiveButton("OK") { dialog, which ->
+        alertDialogBuilder.setPositiveButton(R.string.ok) { dialog, which ->
             viewModel.addDevice(device, input.text.toString())
         }
-        alertDialogBuilder.setNegativeButton("Anuluj") { dialog, which -> dialog.cancel() }
+        alertDialogBuilder.setNegativeButton(R.string.cancel) { dialog, which -> dialog.cancel() }
         alertDialogBuilder.show()
     }
 }

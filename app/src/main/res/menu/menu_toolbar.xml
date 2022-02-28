@@ -4,14 +4,14 @@
 
     <item
         android:id="@+id/action_add"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
         android:icon="@drawable/icon_add"
-        android:title="New device" />
+        android:title="@string/add_device" />
 
     <item
         android:id="@+id/action_settings"
         app:showAsAction="never"
         android:icon="@drawable/icon_settings"
-        android:title="Settings" />
+        android:title="@string/settings" />
 
 </menu>
