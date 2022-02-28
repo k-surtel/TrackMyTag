@@ -30,8 +30,6 @@ import com.ks.trackmytag.bluetooth.scanning.OnScanListener
 
 class MainFragment : Fragment() {
 
-    private val PERMISSION_REQUEST_FINE_LOCATION = 1
-
     private lateinit var viewModel: MainViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -46,10 +44,6 @@ class MainFragment : Fragment() {
         binding.lifecycleOwner = this
 
         viewModel.setOnScanListener(object: OnScanListener() {
-            override fun onScanStarted() {
-                Toast.makeText(context, R.string.scanning_started, Toast.LENGTH_SHORT).show()
-            }
-
             override fun onScanFinished(devices: MutableList<BluetoothDevice>?, errorCode: Int?) {
                 Toast.makeText(context, R.string.scanning_finished, Toast.LENGTH_SHORT).show()
                 displayDevices(viewModel.sortNewDevices(devices), errorCode)
@@ -72,7 +66,7 @@ class MainFragment : Fragment() {
         loadSettings()
 
         if (isBleSupported()) viewModel.scanService.setupBle()
-        if (!viewModel.scanService.isBleInitialized()) requestBluetoothEnable()
+        if (!viewModel.scanService.isBluetoothInitialized()) requestBluetoothEnable()
         requestLocationPermission()
 
         return binding.root
@@ -114,17 +108,14 @@ class MainFragment : Fragment() {
     }
 
     private fun requestBluetoothEnable() {
-        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                // operations..
-            }
-        }
+        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
         resultLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
     }
 
     private fun requestLocationPermission() {
         if ((checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PermissionChecker.PERMISSION_DENIED)) {
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), PERMISSION_REQUEST_FINE_LOCATION)
+            val resultLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+            resultLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
         }
     }
 
