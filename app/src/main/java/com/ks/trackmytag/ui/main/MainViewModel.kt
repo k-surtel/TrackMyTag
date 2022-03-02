@@ -51,6 +51,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun setupBle() { scanService.setupBle() }
+
     fun scan() { scanService.scan() }
 
     fun sortNewDevices(newDevices: MutableList<BluetoothDevice>?): MutableList<BluetoothDevice>? {

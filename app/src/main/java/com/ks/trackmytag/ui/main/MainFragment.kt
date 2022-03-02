@@ -5,7 +5,6 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.InputType
 import android.view.LayoutInflater
@@ -24,6 +23,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import com.ks.trackmytag.R
+import com.ks.trackmytag.bluetooth.isBleSupported
 import com.ks.trackmytag.databinding.FragmentMainBinding
 import com.ks.trackmytag.bluetooth.scanning.OnScanListener
 
@@ -63,11 +63,9 @@ class MainFragment : Fragment() {
             it?.let { adapter.notifyItemChanged(it) }
         }
 
+        if(isBleSupported(requireContext())) { requestBluetoothEnable() }
+        requestLocationPermission() //TODO dialog w/ explanation
         loadSettings()
-
-        if (isBleSupported()) viewModel.scanService.setupBle()
-        if (!viewModel.scanService.isBluetoothInitialized()) requestBluetoothEnable()
-        requestLocationPermission()
 
         return binding.root
     }
@@ -95,20 +93,10 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun isBleSupported(): Boolean {
-        if (!requireActivity().packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            val alertBuilder = AlertDialog.Builder(requireContext())
-            alertBuilder.setTitle(R.string.no_ble)
-            alertBuilder.setMessage(R.string.no_ble_support)
-            alertBuilder.setPositiveButton(android.R.string.ok, null)
-            alertBuilder.setOnDismissListener { requireActivity().finish() }
-            alertBuilder.show()
-            return false
-        } else return true
-    }
-
     private fun requestBluetoothEnable() {
-        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
+        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) { viewModel.setupBle() }
+        }
         resultLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
     }
 

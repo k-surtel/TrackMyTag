@@ -16,8 +16,5 @@ class ScanCallback : ScanCallback() {
         }
     }
 
-    override fun onScanFailed(errorCode: Int) {
-        Log.d("ScanCallback", "onScanFailed()") //TODO spr jakie tam są i obsłużyć
-        this.errorCode = errorCode
-    }
+    override fun onScanFailed(errorCode: Int) { this.errorCode = errorCode }
 }

@@ -20,5 +20,7 @@
     <string name="two_seconds">2 secnods</string>
     <string name="five_seconds">5 seconds</string>
     <string name="ten_seconds">10 seconds</string>
+    <string name="enable_bluetooth">Enable Bluetooth</string>
+    <string name="enable_bluetooth_question">Do you want to enable Bluetooth?</string>
 
 </resources>
