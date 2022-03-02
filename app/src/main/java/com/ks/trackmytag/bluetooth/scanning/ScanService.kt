@@ -13,7 +13,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.ks.trackmytag.R
 import com.ks.trackmytag.bluetooth.isBluetoothEnabled
-import com.ks.trackmytag.bluetooth.requestBluetoothEnable
 
 class ScanService(private val context: Context) {
 
