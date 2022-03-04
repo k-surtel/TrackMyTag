@@ -9,20 +9,28 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.ks.trackmytag.R
+import com.ks.trackmytag.bluetooth.BleManager
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.bluetooth.scanning.ScanService
 import com.ks.trackmytag.bluetooth.connection.ConnectionService
 import com.ks.trackmytag.bluetooth.connection.OnConnectionStateChangeListener
 import com.ks.trackmytag.bluetooth.scanning.OnScanListener
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
-
-class MainViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val bleManager: BleManager
+) : ViewModel() {
 
     private val _devices = MutableLiveData<MutableList<Device>>()
     val devices: LiveData<MutableList<Device>> get() = _devices
-    val scanService = ScanService(application.applicationContext)
-    private val connectionService = ConnectionService(application.applicationContext)
+    val scanService = ScanService(context)
+    private val connectionService = ConnectionService(context)
     private val _deviceChanged = MutableLiveData<Int>()
     val deviceChanged: LiveData<Int> get() = _deviceChanged
 
@@ -51,9 +59,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun setupBle() { scanService.setupBle() }
+    fun setupBle() {
+        scanService.setupBle()
+    }
 
-    fun scan() { scanService.scan() }
+    fun scan() {
+        scanService.scan()
+    }
 
     fun sortNewDevices(newDevices: MutableList<BluetoothDevice>?): MutableList<BluetoothDevice>? {
         newDevices?.forEach { device ->
@@ -64,7 +76,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun formatDisplayedDeviceData(devices: MutableList<BluetoothDevice>): Array<CharSequence> {
         var items: Array<CharSequence> = emptyArray()
-        devices.forEach { items = items.plus(getApplication<Application>().resources.getString(R.string.device_data, it.name, it.address)) }
+        devices.forEach { items = items.plus(context.getString(R.string.device_data, it.name, it.address)) }
         return items
     }
 

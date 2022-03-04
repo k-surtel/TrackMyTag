@@ -18,6 +18,7 @@ import androidx.core.content.PermissionChecker
 import androidx.core.content.PermissionChecker.checkSelfPermission
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
@@ -26,18 +27,19 @@ import com.ks.trackmytag.R
 import com.ks.trackmytag.bluetooth.isBleSupported
 import com.ks.trackmytag.databinding.FragmentMainBinding
 import com.ks.trackmytag.bluetooth.scanning.OnScanListener
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint
 class MainFragment : Fragment() {
 
-    private lateinit var viewModel: MainViewModel
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
         val binding: FragmentMainBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false)
         val application = requireNotNull(this.activity).application
-        val viewModelFactory = MainViewModelFactory(application)
-        viewModel = ViewModelProvider(requireActivity(), viewModelFactory)[MainViewModel::class.java]
+        //val viewModelFactory = MainViewModelFactory(application)
+        //viewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
         setHasOptionsMenu(true)
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
@@ -82,7 +84,7 @@ class MainFragment : Fragment() {
     }
 
     private fun loadSettings() {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
         viewModel.scanService.scanningTime = preferences.getString("scan_time", "5000")!!.toLong()
 
         preferences.registerOnSharedPreferenceChangeListener { function, key ->
