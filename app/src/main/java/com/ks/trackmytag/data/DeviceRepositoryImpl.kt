@@ -1,8 +1,21 @@
 package com.ks.trackmytag.data
 
-class DeviceRepositoryImpl : DeviceRepository {
+import androidx.lifecycle.LiveData
+import com.ks.trackmytag.bluetooth.BleManager
+import com.ks.trackmytag.bluetooth.scanning.ScanResponse
+
+class DeviceRepositoryImpl(private val bleManager: BleManager) : DeviceRepository {
 
     override fun setupBle() {
-        TODO("Not yet implemented")
+        bleManager.setupBle()
+    }
+
+    override suspend fun getNewDevices() { //TODO sort through devices
+        bleManager.scan()
+
+    }
+
+    override fun getScanResponse(): LiveData<ScanResponse> {
+        return bleManager.scanResponse
     }
 }

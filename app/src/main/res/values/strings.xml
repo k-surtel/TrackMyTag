@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">TrackMyTag</string>
     <string name="title_activity_settings">SettingsActivity</string>
-    <string name="device_data">Name: %1$s\nAddress: %2$s</string>
+    <string name="new_devices_data">Name: %1$s\nAddress: %2$s</string>
     <string name="scanning_started">Scanning has been started</string>
     <string name="scanning_finished">Scanning has finished</string>
     <string name="no_ble">No BLE</string>

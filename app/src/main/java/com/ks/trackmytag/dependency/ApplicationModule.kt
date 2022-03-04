@@ -2,6 +2,8 @@ package com.ks.trackmytag.dependency
 
 import android.content.Context
 import com.ks.trackmytag.bluetooth.BleManager
+import com.ks.trackmytag.data.DeviceRepository
+import com.ks.trackmytag.data.DeviceRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,5 +19,11 @@ object ApplicationModule {
     @Singleton
     fun provideBleManager(@ApplicationContext context: Context): BleManager {
         return BleManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDeviceRepository(bleManager: BleManager): DeviceRepository {
+        return DeviceRepositoryImpl(bleManager)
     }
 }

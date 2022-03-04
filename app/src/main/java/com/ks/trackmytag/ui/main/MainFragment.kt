@@ -19,14 +19,11 @@ import androidx.core.content.PermissionChecker.checkSelfPermission
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import androidx.preference.PreferenceManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.ks.trackmytag.R
 import com.ks.trackmytag.bluetooth.isBleSupported
 import com.ks.trackmytag.databinding.FragmentMainBinding
-import com.ks.trackmytag.bluetooth.scanning.OnScanListener
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -49,14 +46,25 @@ class MainFragment : Fragment() {
         })
         binding.devices.adapter = adapter
 
-        viewModel.setOnScanListener(object: OnScanListener() {
-            override fun onScanFinished(devices: MutableList<BluetoothDevice>?, errorCode: Int?) {
-                Toast.makeText(context, R.string.scanning_finished, Toast.LENGTH_SHORT).show()
-                displayDevices(viewModel.sortNewDevices(devices), errorCode)
-            }
-        })
+        viewModel.scanResponse.observe(viewLifecycleOwner) {
+            viewModel.onScanResponseReceived(it)
+        }
 
-        viewModel.devices.observe(viewLifecycleOwner) {
+        viewModel.showScanErrorMessage.observe(viewLifecycleOwner) {
+            showScanErrorMessage(it)
+        }
+
+        viewModel.showScanDevices.observe(viewLifecycleOwner) {
+            showScanDevices(it)
+        }
+
+
+
+
+
+
+
+        viewModel.savedDevices.observe(viewLifecycleOwner) {
             it?.let { adapter.submitList(it) }
         }
 
@@ -73,7 +81,7 @@ class MainFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId) {
         R.id.action_add -> {
-            viewModel.scan()
+            viewModel.getNewDevices()
             true
         }
         R.id.action_settings -> {
@@ -84,14 +92,14 @@ class MainFragment : Fragment() {
     }
 
     private fun loadSettings() {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        viewModel.scanService.scanningTime = preferences.getString("scan_time", "5000")!!.toLong()
-
-        preferences.registerOnSharedPreferenceChangeListener { function, key ->
-            if(key.equals("scan_time")) {
-                viewModel.scanService.scanningTime = function.getString("key", "5000")!!.toLong()
-            }
-        }
+//        val preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+//        viewModel.scanService.scanningTime = preferences.getString("scan_time", "5000")!!.toLong()
+//
+//        preferences.registerOnSharedPreferenceChangeListener { function, key ->
+//            if(key.equals("scan_time")) {
+//                viewModel.scanService.scanningTime = function.getString("key", "5000")!!.toLong()
+//            }
+//        }
     }
 
     private fun requestBluetoothEnable() {
@@ -108,40 +116,42 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun displayDevices(newDevices: MutableList<BluetoothDevice>?, errorCode: Int?) {
-        if (errorCode != null && errorCode != 0) {
-            //1 - scan already started
-            //2 - Fails to start scan as app cannot be registered.
-            //3 - Fails to start scan due an internal error
-            //4 - Fails to start power optimized scan as this feature is not supported.
-            //5 - Fails to start scan as it is out of hardware resources.
-            //6 - Fails to start scan as application tries to scan too frequently.
-            //TODO
-
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.scanning_error)
-                .setMessage(resources.getString(R.string.scanning_error_message, errorCode))
-                .show()
-        }
-
-        if (!newDevices.isNullOrEmpty()) {
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.choose_device)
-                .setItems(viewModel.formatDisplayedDeviceData(newDevices)) { _, which ->
-                    chooseDevice(newDevices.get(which), viewModel)
-                }
-                .show()
-        } else Toast.makeText(context, R.string.no_devices_found, Toast.LENGTH_SHORT).show()
+    private fun showScanErrorMessage(errorCode: Int) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.scanning_error)
+            .setMessage(resources.getString(R.string.scanning_error_message, errorCode))
+            .show()
     }
 
-    private fun chooseDevice(device: BluetoothDevice, viewModel: MainViewModel) {
+    private fun showScanDevices(devices: Map<String, String>) {
+        if(devices.isEmpty()) {
+            Toast.makeText(context, R.string.no_devices_found, Toast.LENGTH_SHORT).show()
+        } else {
+            var devicesArray: Array<CharSequence> = emptyArray()
+
+            devices.forEach {
+                devicesArray = devicesArray.plus(getString(R.string.new_devices_data, it.key, it.value))
+            }
+
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.choose_device)
+                .setItems(devicesArray) { _, which ->
+                    chooseDevice(which)
+                }
+                .show()
+        }
+    }
+
+    private fun chooseDevice(index: Int) {
         val input = EditText(context)
         input.inputType = InputType.TYPE_CLASS_TEXT
 
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.name_device)
             .setView(input)
-            .setPositiveButton(R.string.ok) { dialog, _ -> viewModel.addDevice(device, input.text.toString()) }
+            .setPositiveButton(R.string.ok) { _, _ ->
+                viewModel.saveDevice(index, input.text.toString())
+            }
             .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.cancel() }
             .show()
     }
