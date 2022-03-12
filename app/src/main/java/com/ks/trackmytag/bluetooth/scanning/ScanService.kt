@@ -28,6 +28,7 @@ class ScanService(private val context: Context) {
     val scanResponse: LiveData<ScanResponse>
         get() = _scanResponse
 
+
     fun setupBle() {
         bluetoothScanner = bluetoothManager.adapter.bluetoothLeScanner
         settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_POWER).build()

@@ -1,16 +1,26 @@
 package com.ks.trackmytag.data
 
 import android.bluetooth.BluetoothDevice
+import androidx.room.Entity
+import androidx.room.Ignore
+import androidx.room.PrimaryKey
 
+@Entity(tableName = "devices")
 data class Device(
-    val bluetoothDevice: BluetoothDevice,
-    var name: String
+    @PrimaryKey(autoGenerate = true)
+    val id: Int? = null,
+    var name: String,
+    val address: String
 ) {
-    val address: String = bluetoothDevice.address
+    @Ignore
     var state: State = State.DISCONNECTED
-
-    enum class State {
-        DISCONNECTED,
-        CONNECTED
-    }
+    @Ignore
+    var bluetoothDevice: BluetoothDevice? = null
 }
+
+enum class State {
+    DISCONNECTED,
+    CONNECTED
+}
+
+

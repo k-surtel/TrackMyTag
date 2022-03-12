@@ -8,7 +8,6 @@ import androidx.lifecycle.*
 import com.ks.trackmytag.R
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.bluetooth.connection.ConnectionService
-import com.ks.trackmytag.bluetooth.connection.OnConnectionStateChangeListener
 import com.ks.trackmytag.bluetooth.scanning.ScanResponse
 import com.ks.trackmytag.data.DeviceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @ApplicationContext context: Context,   //TODO
     private val deviceRepository: DeviceRepository
 ) : ViewModel() {
 
@@ -40,33 +39,34 @@ class MainViewModel @Inject constructor(
         get() = _showScanDevices
 
     val scanResponse = deviceRepository.getScanResponse()
+    val connectionResponse = deviceRepository.getConnectionResponse()
 
 
 
     init {
         _savedDevices.value = mutableListOf()
-        setOnConnectionStateChangeListener()
+        //setOnConnectionStateChangeListener()
     }
 
-    private fun setOnConnectionStateChangeListener() {
-        connectionService.bluetoothGattCallback.onConnectionStateChangeListener = object: OnConnectionStateChangeListener() {
-            override fun onConnectionStateChange(bluetoothDevice: BluetoothDevice, state: Int) {
-
-                val device = _savedDevices.value!!.first { it.bluetoothDevice == bluetoothDevice }
-
-                when(state) {
-                    BluetoothProfile.STATE_CONNECTED -> {
-                        device.state = Device.State.CONNECTED
-                    }
-                    BluetoothProfile.STATE_DISCONNECTED -> {
-                        device.state = Device.State.DISCONNECTED
-                    }
-                }
-
-                _deviceChanged.postValue(_savedDevices.value!!.indexOf(device))
-            }
-        }
-    }
+//    private fun setOnConnectionStateChangeListener() {
+//        connectionService.bluetoothGattCallback.onConnectionStateChangeListener = object: OnConnectionStateChangeListener() {
+//            override fun onConnectionStateChange(bluetoothDevice: BluetoothDevice, state: Int) {
+//
+//                val device = _savedDevices.value!!.first { it.bluetoothDevice == bluetoothDevice }
+//
+//                when(state) {
+//                    BluetoothProfile.STATE_CONNECTED -> {
+//                        device.state = Device.State.CONNECTED
+//                    }
+//                    BluetoothProfile.STATE_DISCONNECTED -> {
+//                        device.state = Device.State.DISCONNECTED
+//                    }
+//                }
+//
+//                _deviceChanged.postValue(_savedDevices.value!!.indexOf(device))
+//            }
+//        }
+//    }
 
     fun setupBle() {
         deviceRepository.setupBle()
@@ -107,7 +107,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun saveDevice(index: Int, name: String) {
-        
+
     }
 
     fun sortNewDevices(newDevices: MutableList<BluetoothDevice>?): MutableList<BluetoothDevice>? {
@@ -122,12 +122,4 @@ class MainViewModel @Inject constructor(
 //        devices.forEach { items = items.plus(context.getString(R.string.device_data, it.name, it.address)) }
 //        return items
 //    }
-
-    fun addDevice(device: BluetoothDevice, name: String) {
-        if(_savedDevices.value!!.none { it.address == device.address }) {
-            val newDevice = Device(device, name)
-            _savedDevices.postValue(_savedDevices.value!!.plus(newDevice).toMutableList())
-            connectionService.connectWithDevice(newDevice)
-        }
-    }
 }

@@ -1,14 +1,19 @@
 package com.ks.trackmytag.bluetooth.connection
 
+import android.bluetooth.BluetoothDevice
 import android.content.Context
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import com.ks.trackmytag.bluetooth.scanning.ScanResponse
 import com.ks.trackmytag.data.Device
 
 class ConnectionService(private val context: Context) {
 
-    val bluetoothGattCallback = BluetoothGattCallback()
+    private val _connectionResponse = MutableLiveData<Int>()
+    val connectionResponse: LiveData<Int> get() = _connectionResponse
 
-    fun connectWithDevice(device: Device) {
-        val bluetoothGatt = device.bluetoothDevice.connectGatt(context, false, bluetoothGattCallback)
+    fun connectWithDevice(device: BluetoothDevice) {
+        val bluetoothGatt = device.connectGatt(context, false, BluetoothGattCallback(_connectionResponse))
     }
 }
 

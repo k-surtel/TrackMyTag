@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothDevice
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -50,6 +51,10 @@ class MainFragment : Fragment() {
             viewModel.onScanResponseReceived(it)
         }
 
+        viewModel.connectionResponse.observe(viewLifecycleOwner) {
+
+        }
+
         viewModel.showScanErrorMessage.observe(viewLifecycleOwner) {
             showScanErrorMessage(it)
         }
@@ -57,7 +62,6 @@ class MainFragment : Fragment() {
         viewModel.showScanDevices.observe(viewLifecycleOwner) {
             showScanDevices(it)
         }
-
 
 
 
