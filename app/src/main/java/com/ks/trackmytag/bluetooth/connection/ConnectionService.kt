@@ -4,8 +4,6 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.ks.trackmytag.bluetooth.scanning.ScanResponse
-import com.ks.trackmytag.data.Device
 
 class ConnectionService(private val context: Context) {
 

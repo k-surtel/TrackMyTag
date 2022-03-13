@@ -1,0 +1,40 @@
+package com.ks.trackmytag.dependencies
+
+import android.content.Context
+import androidx.room.Room
+import com.ks.trackmytag.bluetooth.BleManager
+import com.ks.trackmytag.data.DeviceRepository
+import com.ks.trackmytag.data.DeviceRepositoryImpl
+import com.ks.trackmytag.data.database.DevicesDao
+import com.ks.trackmytag.data.database.DevicesDatabase
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object ApplicationModule {
+
+    @Provides
+    @Singleton
+    fun provideDevicesDatabase(@ApplicationContext context: Context) =
+        Room.databaseBuilder(context, DevicesDatabase::class.java, "devices_database").build()
+
+    @Provides
+    @Singleton
+    fun provideDevicesDao(devicesDatabase: DevicesDatabase) = devicesDatabase.devicesDao
+
+    @Provides
+    @Singleton
+    fun provideBleManager(@ApplicationContext context: Context) = BleManager(context)
+
+
+    @Provides
+    @Singleton
+    fun provideDeviceRepository(bleManager: BleManager, devicesDao: DevicesDao): DeviceRepository {
+        return DeviceRepositoryImpl(bleManager, devicesDao)
+    }
+}

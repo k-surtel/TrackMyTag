@@ -3,11 +3,9 @@ package com.ks.trackmytag.ui.main
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -34,10 +32,8 @@ class MainFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
-        val binding: FragmentMainBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false)
-        val application = requireNotNull(this.activity).application
-        //val viewModelFactory = MainViewModelFactory(application)
-        //viewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
+        val binding: FragmentMainBinding = DataBindingUtil
+            .inflate(inflater, R.layout.fragment_main, container, false)
         setHasOptionsMenu(true)
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
@@ -47,7 +43,7 @@ class MainFragment : Fragment() {
         })
         binding.devices.adapter = adapter
 
-        viewModel.scanResponse.observe(viewLifecycleOwner) {
+        viewModel.scanResults.observe(viewLifecycleOwner) {
             viewModel.onScanResponseReceived(it)
         }
 

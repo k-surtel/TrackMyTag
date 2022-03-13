@@ -4,15 +4,11 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanSettings
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.ks.trackmytag.R
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 
 class ScanService(private val context: Context) {
 
@@ -24,8 +20,8 @@ class ScanService(private val context: Context) {
     private var isScanActive = false
 
     //TODO
-    private val _scanResponse = MutableLiveData<ScanResponse>()
-    val scanResponse: LiveData<ScanResponse>
+    private val _scanResponse = MutableLiveData<ScanResults>()
+    val scanResults: LiveData<ScanResults>
         get() = _scanResponse
 
 
@@ -39,7 +35,7 @@ class ScanService(private val context: Context) {
     }
 
     suspend fun scan() {
-        val callback = BleScanCallback(ScanResponse())
+        val callback = BleScanCallback(ScanResults())
 
         if(!isScanActive) {
             isScanActive = true
@@ -49,7 +45,7 @@ class ScanService(private val context: Context) {
             delay(scanTime)
             bluetoothScanner?.stopScan(callback)
 
-            _scanResponse.value = callback.scanResponse
+            _scanResponse.value = callback.scanResults
             isScanActive = false
             Toast.makeText(context, R.string.scanning_finished, Toast.LENGTH_SHORT).show()
         }

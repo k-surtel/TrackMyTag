@@ -14,6 +14,6 @@ interface DevicesDao {
     suspend fun deleteDevice(device: Device)
 
     @Query("SELECT * FROM devices")
-    fun getAllDevices(): LiveData<List<Device>>
+    fun getSavedDevices(): LiveData<List<Device>>
 
 }

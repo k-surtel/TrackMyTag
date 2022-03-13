@@ -44,7 +44,7 @@ class DevicesDaoTest {
         val device = Device(1, "device1", "address1")
         devicesDao.insertDevice(device)
 
-        val allDevices = devicesDao.getAllDevices().getOrAwaitValue()
+        val allDevices = devicesDao.getSavedDevices().getOrAwaitValue()
         assertThat(allDevices).contains(device)
     }
 
@@ -54,7 +54,7 @@ class DevicesDaoTest {
         device.state = State.DISCONNECTED
         devicesDao.insertDevice(device)
 
-        val allDevices = devicesDao.getAllDevices().getOrAwaitValue()
+        val allDevices = devicesDao.getSavedDevices().getOrAwaitValue()
         assertThat(allDevices).contains(device)
     }
 
@@ -65,7 +65,7 @@ class DevicesDaoTest {
         val updatedDevice = Device(1, "device_updated", "address1")
         devicesDao.insertDevice(updatedDevice)
 
-        val allDevices = devicesDao.getAllDevices().getOrAwaitValue()
+        val allDevices = devicesDao.getSavedDevices().getOrAwaitValue()
         assertThat(allDevices).doesNotContain(device)
         assertThat(allDevices).contains(updatedDevice)
     }
@@ -76,7 +76,7 @@ class DevicesDaoTest {
         devicesDao.insertDevice(device)
         devicesDao.deleteDevice(device)
 
-        val allDevices = devicesDao.getAllDevices().getOrAwaitValue()
+        val allDevices = devicesDao.getSavedDevices().getOrAwaitValue()
         assertThat(allDevices).doesNotContain(device)
     }
 }

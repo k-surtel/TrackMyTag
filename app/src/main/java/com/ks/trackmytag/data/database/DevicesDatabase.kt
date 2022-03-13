@@ -12,24 +12,4 @@ abstract class DevicesDatabase : RoomDatabase() {
 
     abstract val devicesDao: DevicesDao
 
-
-    companion object {
-        @Volatile
-        private var INSTANCE: DevicesDatabase? = null
-
-        fun getInstance(context: Context): DevicesDatabase {
-            synchronized(this) {
-                var instance = INSTANCE
-
-                if(instance == null) {
-                    instance = Room.databaseBuilder(context.applicationContext, DevicesDatabase::class.java, "devices_database")
-                        .fallbackToDestructiveMigration().build()
-
-                    INSTANCE = instance
-                }
-
-                return instance
-            }
-        }
-    }
 }
