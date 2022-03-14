@@ -3,6 +3,7 @@ package com.ks.trackmytag.data
 import android.bluetooth.BluetoothDevice
 import androidx.lifecycle.LiveData
 import com.ks.trackmytag.bluetooth.BleManager
+import com.ks.trackmytag.bluetooth.connection.ConnectionResponse
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.data.database.DevicesDao
 
@@ -26,7 +27,7 @@ class DeviceRepositoryImpl(
         device.bluetoothDevice?.let { bleManager.connectWithDevice(it) }
     }
 
-    override fun getConnectionResponse(): LiveData<Int> {
+    override fun getConnectionResponse(): LiveData<ConnectionResponse> {
         return bleManager.connectionResponse
     }
 }

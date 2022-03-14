@@ -1,7 +1,9 @@
 package com.ks.trackmytag.ui.main
 
 import android.bluetooth.BluetoothDevice
+import android.util.Log
 import androidx.lifecycle.*
+import com.ks.trackmytag.bluetooth.connection.ConnectionResponse
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.data.DeviceRepository
@@ -13,23 +15,19 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepository) : ViewModel() {
 
     val savedDevices = deviceRepository.getSavedDevices()
-    private val _deviceChanged = MutableLiveData<Int>()
-    val deviceChanged: LiveData<Int> get() = _deviceChanged
-
-
 
     private val _scanDevices = mutableListOf<BluetoothDevice>()
 
     private val _showScanErrorMessage = MutableLiveData<Int>()
-    val showScanErrorMessage: LiveData<Int>
-        get() = _showScanErrorMessage
+    val showScanErrorMessage: LiveData<Int> get() = _showScanErrorMessage
     private val _showScanDevices = MutableLiveData<Map<String, String>>()
-    val showScanDevices: LiveData<Map<String, String>>
-        get() = _showScanDevices
+    val showScanDevices: LiveData<Map<String, String>> get() = _showScanDevices
 
     val scanResults = deviceRepository.getScanResults()
     val connectionResponse = deviceRepository.getConnectionResponse()
 
+    private val _deviceChanged = MutableLiveData<Int>()
+    val deviceChanged: LiveData<Int> get() = _deviceChanged
 
 
     fun setupBle() {
@@ -37,12 +35,10 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
     }
 
     fun getNewDevices() {
-        viewModelScope.launch {
-            val scanResponse = deviceRepository.getNewDevices()
-        }
+        viewModelScope.launch { deviceRepository.getNewDevices() }
     }
 
-    fun onScanResponseReceived(scanResults: ScanResults) {
+    fun onScanResultsReceived(scanResults: ScanResults) {
         _scanDevices.clear()
 
         if(scanResults.errorCode != 0) {
@@ -61,7 +57,7 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
             scanResults.devices.forEach { bluetoothDevice ->
                 if(!savedDevices.value!!.any { it.address == bluetoothDevice.address}){
                     _scanDevices.add(bluetoothDevice)
-                    items.put(bluetoothDevice.name, bluetoothDevice.address)
+                    items[bluetoothDevice.name] = bluetoothDevice.address
                 }
             }
 
@@ -75,6 +71,14 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
             val device = Device(null, name, _scanDevices[index].address)
             device.bluetoothDevice = _scanDevices[index]
             deviceRepository.saveDevice(device)
+        }
+    }
+
+    fun onConnectionResponseReceived(connectionResponse: ConnectionResponse) {
+        val device = savedDevices.value!!.find { it.address == connectionResponse.deviceAddress }
+        device?.let {
+            it.state = connectionResponse.newState
+            _deviceChanged.postValue(savedDevices.value!!.indexOf(it))
         }
     }
 }

@@ -2,6 +2,7 @@ package com.ks.trackmytag.data
 
 import android.bluetooth.BluetoothDevice
 import androidx.lifecycle.LiveData
+import com.ks.trackmytag.bluetooth.connection.ConnectionResponse
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 
 interface DeviceRepository {
@@ -16,5 +17,5 @@ interface DeviceRepository {
 
     suspend fun saveDevice(device: Device)
 
-    fun getConnectionResponse(): LiveData<Int>
+    fun getConnectionResponse(): LiveData<ConnectionResponse>
 }

@@ -24,5 +24,6 @@
     <string name="enable_bluetooth_question">Do you want to enable Bluetooth?</string>
     <string name="scanning_error">Scanning error</string>
     <string name="scanning_error_message">Scanning process could not be finished. Error code: %1$d</string>
+    <string name="remove_device">Remove device</string>
 
 </resources>

@@ -44,11 +44,11 @@ class MainFragment : Fragment() {
         binding.devices.adapter = adapter
 
         viewModel.scanResults.observe(viewLifecycleOwner) {
-            viewModel.onScanResponseReceived(it)
+            viewModel.onScanResultsReceived(it)
         }
 
         viewModel.connectionResponse.observe(viewLifecycleOwner) {
-
+            viewModel.onConnectionResponseReceived(it)
         }
 
         viewModel.showScanErrorMessage.observe(viewLifecycleOwner) {
@@ -58,11 +58,6 @@ class MainFragment : Fragment() {
         viewModel.showScanDevices.observe(viewLifecycleOwner) {
             showScanDevices(it)
         }
-
-
-
-
-
 
         viewModel.savedDevices.observe(viewLifecycleOwner) {
             it?.let { adapter.submitList(it) }

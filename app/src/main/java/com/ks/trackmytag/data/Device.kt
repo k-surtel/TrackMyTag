@@ -20,7 +20,8 @@ data class Device(
 
 enum class State {
     DISCONNECTED,
-    CONNECTED
+    CONNECTED,
+    UNKNOWN
 }
 
 
