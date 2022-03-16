@@ -16,7 +16,7 @@
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
-        android:name="com.ks.trackmytag.ui.settings.SettingsFragment"
+        android:name="com.ks.trackmytag.ui.preferences.PreferencesFragment"
         android:label="SettingsFragment" />
 
 </navigation>

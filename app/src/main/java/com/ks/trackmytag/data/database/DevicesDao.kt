@@ -1,8 +1,8 @@
 package com.ks.trackmytag.data.database
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.ks.trackmytag.data.Device
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DevicesDao {
@@ -14,6 +14,6 @@ interface DevicesDao {
     suspend fun deleteDevice(device: Device)
 
     @Query("SELECT * FROM devices")
-    fun getSavedDevices(): LiveData<List<Device>>
+    fun getSavedDevices(): Flow<List<Device>>
 
 }

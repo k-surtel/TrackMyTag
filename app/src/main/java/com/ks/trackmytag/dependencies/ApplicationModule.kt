@@ -1,12 +1,15 @@
 package com.ks.trackmytag.dependencies
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import com.ks.trackmytag.bluetooth.BleManager
 import com.ks.trackmytag.data.DeviceRepository
 import com.ks.trackmytag.data.DeviceRepositoryImpl
 import com.ks.trackmytag.data.database.DevicesDao
 import com.ks.trackmytag.data.database.DevicesDatabase
+import com.ks.trackmytag.dataStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,6 +29,11 @@ object ApplicationModule {
     @Provides
     @Singleton
     fun provideDevicesDao(devicesDatabase: DevicesDatabase) = devicesDatabase.devicesDao
+
+    @Provides
+    @Singleton
+    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> =
+        context.dataStore
 
     @Provides
     @Singleton

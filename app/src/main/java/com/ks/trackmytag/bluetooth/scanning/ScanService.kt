@@ -9,6 +9,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.ks.trackmytag.R
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
+import java.util.concurrent.Flow
 
 class ScanService(private val context: Context) {
 
@@ -19,10 +21,8 @@ class ScanService(private val context: Context) {
     private var settings: ScanSettings? = null
     private var isScanActive = false
 
-    //TODO
-    private val _scanResponse = MutableLiveData<ScanResults>()
-    val scanResults: LiveData<ScanResults>
-        get() = _scanResponse
+    private val _scanResultsFlow = MutableSharedFlow<ScanResults>()
+    val scanResultsFlow: SharedFlow<ScanResults> get() = _scanResultsFlow
 
 
     fun setupBle() {
@@ -45,11 +45,11 @@ class ScanService(private val context: Context) {
             delay(scanTime)
             bluetoothScanner?.stopScan(callback)
 
-            _scanResponse.value = callback.scanResults
+            _scanResultsFlow.emit(callback.scanResults)
+
             isScanActive = false
             Toast.makeText(context, R.string.scanning_finished, Toast.LENGTH_SHORT).show()
         }
-
     }
 
 }

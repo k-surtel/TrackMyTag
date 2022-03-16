@@ -8,8 +8,12 @@ import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.data.DeviceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private const val TAG = "MainViewModel"
 
 @HiltViewModel
 class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepository) : ViewModel() {
@@ -23,7 +27,6 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
     private val _showScanDevices = MutableLiveData<Map<String, String>>()
     val showScanDevices: LiveData<Map<String, String>> get() = _showScanDevices
 
-    val scanResults = deviceRepository.getScanResults()
     val connectionResponse = deviceRepository.getConnectionResponse()
 
     private val _deviceChanged = MutableLiveData<Int>()
@@ -35,35 +38,39 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
     }
 
     fun getNewDevices() {
-        viewModelScope.launch { deviceRepository.getNewDevices() }
-    }
+        viewModelScope.launch {
+            deviceRepository.getNewDevices().collect { scanResults ->
+                if(scanResults.errorCode != 0) {
+                    //0 - OK
+                    //1 - scan already started
+                    //2 - Fails to start scan as app cannot be registered.
+                    //3 - Fails to start scan due an internal error
+                    //4 - Fails to start power optimized scan as this feature is not supported.
+                    //5 - Fails to start scan as it is out of hardware resources.
+                    //6 - Fails to start scan as application tries to scan too frequently.
 
-    fun onScanResultsReceived(scanResults: ScanResults) {
-        _scanDevices.clear()
+                    _showScanErrorMessage.value = scanResults.errorCode
+                } else {
+                    _scanDevices.clear()
+                    val items = mutableMapOf<String, String>()
 
-        if(scanResults.errorCode != 0) {
-            //0 - OK
-            //1 - scan already started
-            //2 - Fails to start scan as app cannot be registered.
-            //3 - Fails to start scan due an internal error
-            //4 - Fails to start power optimized scan as this feature is not supported.
-            //5 - Fails to start scan as it is out of hardware resources.
-            //6 - Fails to start scan as application tries to scan too frequently.
+//            scanResults.devices.forEach { bluetoothDevice ->
+//                if(!savedDevices.value!!.any { it.address == bluetoothDevice.address}){
+//                    _scanDevices.add(bluetoothDevice)
+//                    items[bluetoothDevice.name] = bluetoothDevice.address
+//                }
+//            }
 
-            _showScanErrorMessage.value = scanResults.errorCode
-        } else {
-            val items = mutableMapOf<String, String>()
+                    //temporary
+                    scanResults.devices.forEach { bluetoothDevice ->
+                        _scanDevices.add(bluetoothDevice)
+                        items[bluetoothDevice.name] = bluetoothDevice.address
+                    }
 
-            scanResults.devices.forEach { bluetoothDevice ->
-                if(!savedDevices.value!!.any { it.address == bluetoothDevice.address}){
-                    _scanDevices.add(bluetoothDevice)
-                    items[bluetoothDevice.name] = bluetoothDevice.address
+                    _showScanDevices.value = items
                 }
             }
-
-            _showScanDevices.value = items
         }
-
     }
 
     fun saveDevice(index: Int, name: String) {
@@ -75,10 +82,9 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
     }
 
     fun onConnectionResponseReceived(connectionResponse: ConnectionResponse) {
-        val device = savedDevices.value!!.find { it.address == connectionResponse.deviceAddress }
-        device?.let {
-            it.state = connectionResponse.newState
-            _deviceChanged.postValue(savedDevices.value!!.indexOf(it))
+//        val device = savedDevices.value!!.find { it.address == connectionResponse.deviceAddress }
+//        device?.let {
+//            it.state = connectionResponse.newState
+//            _deviceChanged.postValue(savedDevices.value!!.indexOf(it))
         }
     }
-}
