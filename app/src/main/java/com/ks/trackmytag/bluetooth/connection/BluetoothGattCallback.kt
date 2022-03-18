@@ -12,7 +12,6 @@ object BluetoothGattCallback : BluetoothGattCallback() {
 
     // status - status of the connect or disconnect operation, succcess:  BluetoothGatt.GATT_SUCCESS
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-        Log.d("MainView for log", "onConnectionStateChange: called")
         gatt?.let {
             val state = when(newState) {
                 BluetoothProfile.STATE_DISCONNECTED -> State.DISCONNECTED
@@ -21,14 +20,6 @@ object BluetoothGattCallback : BluetoothGattCallback() {
             }
 
             connectionStateFlow.value = ConnectionResponse(gatt.device.address, state)
-
-//            connectionStateFlow.value.deviceAddress = gatt.device.address
-//            connectionStateFlow.value.newState = state
-
-
-            //connectionResponse = ConnectionResponse(gatt.device.address, state)
-//            connectionResponse.deviceAddress = gatt.device.address
-//            connectionResponse.newState = state
         }
     }
 

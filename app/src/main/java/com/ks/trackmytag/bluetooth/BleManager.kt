@@ -9,7 +9,6 @@ import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.bluetooth.scanning.ScanService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
@@ -25,8 +24,6 @@ class BleManager @Inject constructor(@ApplicationContext context: Context) {
     suspend fun scan(): Flow<ScanResults> = scanService.scan()
 
     fun connectWithDevice(device: BluetoothDevice) {
-        Log.d(TAG, "connectWithDevice: called")
-        //connectionService.connectWithDevice(device)
         connectionService.connectWithDevice(device)
     }
 

@@ -18,12 +18,12 @@ class DevicesAdapter(private val connectionStates: ConnectionStates, private val
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position), clickListener, connectionStates)
+        holder.bind(getItem(position), connectionStates, clickListener)
     }
 
     class ViewHolder private constructor(val binding: ItemDeviceBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(device: Device, clickListener: ClickListener, connectionStates: ConnectionStates) {
+        fun bind(device: Device, connectionStates: ConnectionStates, clickListener: ClickListener) {
             binding.device = device
 //            binding.clickListener = clickListener
             binding.connectionStates = connectionStates
