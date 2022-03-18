@@ -45,7 +45,7 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
                         val device = devicesList.find { it.address == connectionResponse.deviceAddress }
                         device?.let {
                             _connectionStates[it.address] = connectionResponse.newState
-                            connectionStates.connectionStates = _connectionStates.toMap()
+                            connectionStates.states = _connectionStates.toMap()
                             _deviceChanged.postValue(devicesList.indexOf(it))
                         }
                     }

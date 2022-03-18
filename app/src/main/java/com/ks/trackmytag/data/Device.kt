@@ -13,8 +13,6 @@ data class Device(
     val address: String
 ) {
     @Ignore
-    var state: State = State.DISCONNECTED
-    @Ignore
     var bluetoothDevice: BluetoothDevice? = null
 }
 

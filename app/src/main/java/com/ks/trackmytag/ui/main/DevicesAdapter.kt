@@ -55,5 +55,5 @@ class ClickListener(val clickListener: (device: Device) -> Unit) {
 }
 
 class ConnectionStates(connectionStates: Map<String, State>) {
-    var connectionStates = connectionStates
+    var states = connectionStates
 }

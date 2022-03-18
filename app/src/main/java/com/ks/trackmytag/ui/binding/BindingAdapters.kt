@@ -9,12 +9,15 @@ import com.ks.trackmytag.data.State
 
 @BindingAdapter("setStateText")
 fun setStateText(view : View, state : State?) {
-    if(state == null) (view as TextView).text = State.DISCONNECTED.name
-    else (view as TextView).text = state.name
+    (view as TextView).text = state?.name ?: State.DISCONNECTED.name
 }
 
 @BindingAdapter("setButtonText")
-fun setButtonText(view : View, state : State) {
-    (view as MaterialButton).text = if(state == State.CONNECTED) view.resources.getString(R.string.disconnect)
-    else view.resources.getString(R.string.connect)
+fun setButtonText(view : View, state : State?) {
+    if(state == null) (view as MaterialButton).text = view.resources.getString(R.string.connect)
+    else {
+            (view as MaterialButton).text =
+                if(state == State.CONNECTED) view.resources.getString(R.string.disconnect)
+                else view.resources.getString(R.string.connect)
+    }
 }
