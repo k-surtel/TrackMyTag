@@ -2,8 +2,15 @@ package com.ks.trackmytag.bluetooth.scanning
 
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
+import android.util.Log
 
-class BleScanCallback(val scanResults: ScanResults) : ScanCallback() {
+object ScanCallback : ScanCallback() {
+
+    lateinit var scanResults: ScanResults
+
+    fun prepareForScan() {
+        scanResults = ScanResults()
+    }
 
     override fun onScanResult(callbackType: Int, result: ScanResult?) {
         result?.device?.let {

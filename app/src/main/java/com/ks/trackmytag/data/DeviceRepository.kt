@@ -12,9 +12,9 @@ interface DeviceRepository {
 
     fun setupBle()
 
-    suspend fun getNewDevices(): SharedFlow<ScanResults>
+    suspend fun findNewDevices(): Flow<ScanResults>
 
-    suspend fun saveDevice(device: Device)
+    suspend fun saveAndConnectDevice(device: Device)
 
     fun getConnectionResponse(): LiveData<ConnectionResponse>
 }

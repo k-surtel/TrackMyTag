@@ -49,11 +49,6 @@ class MainFragment : Fragment() {
         })
         binding.devices.adapter = adapter
 
-//
-//        viewModel.connectionResponse.observe(viewLifecycleOwner) {
-//            viewModel.onConnectionResponseReceived(it)
-//        }
-
         viewModel.showScanErrorMessage.observe(viewLifecycleOwner) {
             showScanErrorMessage(it)
         }
@@ -78,7 +73,7 @@ class MainFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId) {
         R.id.action_add -> {
-            viewModel.getNewDevices()
+            viewModel.addNewDevice()
             true
         }
         R.id.action_settings -> {

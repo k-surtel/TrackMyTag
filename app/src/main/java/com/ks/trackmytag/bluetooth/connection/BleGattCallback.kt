@@ -6,8 +6,10 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.data.State
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.callbackFlow
 
-class BluetoothGattCallback(private val _connectionResponse: MutableLiveData<ConnectionResponse>) : BluetoothGattCallback() {
+class BluetoothGattCallback(private val connectionResponse: ConnectionResponse) : BluetoothGattCallback() {
 
     // status - status of the connect or disconnect operation, succcess:  BluetoothGatt.GATT_SUCCESS
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
@@ -17,8 +19,11 @@ class BluetoothGattCallback(private val _connectionResponse: MutableLiveData<Con
                 BluetoothProfile.STATE_CONNECTED -> State.CONNECTED
                 else -> State.UNKNOWN
             }
-            _connectionResponse.postValue(ConnectionResponse(gatt.device.address, state))
+            connectionResponse.deviceAddress = gatt.device.address
+            connectionResponse.newState = state
         }
+
+        //callbackFlow<> {  }
     }
 
     override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {

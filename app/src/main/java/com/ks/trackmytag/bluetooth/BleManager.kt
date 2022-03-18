@@ -2,6 +2,7 @@ package com.ks.trackmytag.bluetooth
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import com.ks.trackmytag.bluetooth.connection.ConnectionResponse
 import com.ks.trackmytag.bluetooth.connection.ConnectionService
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.bluetooth.scanning.ScanService
@@ -20,10 +21,7 @@ class BleManager @Inject constructor(@ApplicationContext context: Context) {
 
     fun setupBle() { scanService.setupBle() }
 
-    suspend fun scan(): SharedFlow<ScanResults> {
-        scanService.scan()
-        return scanService.scanResultsFlow
-    }
+    suspend fun scan(): Flow<ScanResults> = scanService.scan()
 
     fun connectWithDevice(device: BluetoothDevice) {
         connectionService.connectWithDevice(device)
