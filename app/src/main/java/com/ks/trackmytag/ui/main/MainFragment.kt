@@ -19,10 +19,8 @@ import androidx.core.content.PermissionChecker.checkSelfPermission
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.preference.PreferenceManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.ks.trackmytag.R
 import com.ks.trackmytag.bluetooth.isBleSupported
@@ -47,24 +45,18 @@ class MainFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-        val adapter = DevicesAdapter(ClickListener { device ->
+        val adapter = DevicesAdapter(viewModel.connectionStates, ClickListener { device ->
             /// viewModel.onCardClicked(card)
-        }, viewModel.connectionStates)
+        })
         binding.devices.adapter = adapter
 
-        viewModel.showScanErrorMessage.observe(viewLifecycleOwner) {
-            showScanErrorMessage(it)
-        }
+        lifecycleScope.launch { viewModel.savedDevices.collectLatest { adapter.submitList(it) } }
 
-        viewModel.showScanDevices.observe(viewLifecycleOwner) {
-            showScanDevices(it) // TODO (shows after rotation)
-        }
+        lifecycleScope.launch { viewModel.showScanErrorMessage.collectLatest { showScanErrorMessage(it) } }
 
-        lifecycle.coroutineScope.launch {
-            viewModel.savedDevices.collectLatest { adapter.submitList(it) }
-        }
+        lifecycleScope.launch { viewModel.showScanDevices.collectLatest { showScanDevices(it) } }
 
-        viewModel.deviceChanged.observe(viewLifecycleOwner) { adapter.notifyItemChanged(it) }
+        lifecycleScope.launch { viewModel.deviceChanged.collect { adapter.notifyItemChanged(it) } }
 
         if(isBleSupported(requireContext())) { requestBluetoothEnable() }
         requestLocationPermission() //TODO dialog w/ explanation

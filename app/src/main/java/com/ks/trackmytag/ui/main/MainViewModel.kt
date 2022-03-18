@@ -1,9 +1,7 @@
 package com.ks.trackmytag.ui.main
 
 import android.bluetooth.BluetoothDevice
-import android.util.Log
 import androidx.lifecycle.*
-import com.ks.trackmytag.bluetooth.connection.ConnectionResponse
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.data.DeviceRepository
@@ -25,19 +23,20 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
 
     private val _scanDevices = mutableListOf<BluetoothDevice>()
 
-    private val _showScanErrorMessage = MutableLiveData<Int>()
-    val showScanErrorMessage: LiveData<Int> get() = _showScanErrorMessage
-    private val _showScanDevices = MutableLiveData<Map<String, String>>()
-    val showScanDevices: LiveData<Map<String, String>> get() = _showScanDevices
+    private val _showScanErrorMessage = MutableSharedFlow<Int>(0)
+    val showScanErrorMessage = _showScanErrorMessage.asSharedFlow()
+    private val _showScanDevices = MutableSharedFlow<Map<String, String>>()
+    val showScanDevices = _showScanDevices.asSharedFlow()
+    private val _deviceChanged = MutableSharedFlow<Int>()
+    val deviceChanged = _deviceChanged.asSharedFlow()
 
-    private val _deviceChanged = MutableLiveData<Int>()
-    val deviceChanged: LiveData<Int> get() = _deviceChanged
+    private val _connectionResponseStateFlow = deviceRepository.getConnectionResponseStateFlow()
 
-    private val connectionResponseStateFlow = deviceRepository.getConnectionResponseStateFlow()
+    init { setupConnectionStateChanges() }
 
-    init {
+    private fun setupConnectionStateChanges() {
         viewModelScope.launch {
-            connectionResponseStateFlow.collectLatest { connectionResponse ->
+            _connectionResponseStateFlow.collectLatest { connectionResponse ->
                 connectionResponse.deviceAddress?.let {
                     _connectionStates[it] = connectionResponse.newState
 
@@ -46,7 +45,7 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
                         device?.let {
                             _connectionStates[it.address] = connectionResponse.newState
                             connectionStates.states = _connectionStates.toMap()
-                            _deviceChanged.postValue(devicesList.indexOf(it))
+                            _deviceChanged.emit(devicesList.indexOf(it))
                         }
                     }
                 }
@@ -64,7 +63,7 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
         }
     }
 
-    private fun processFoundDevices(scanResults: ScanResults) {
+    private suspend fun processFoundDevices(scanResults: ScanResults) {
         if(scanResults.errorCode != 0) {
             //0 - OK
             //1 - scan already started
@@ -73,10 +72,9 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
             //4 - Fails to start power optimized scan as this feature is not supported.
             //5 - Fails to start scan as it is out of hardware resources.
             //6 - Fails to start scan as application tries to scan too frequently.
-
-            _showScanErrorMessage.value = scanResults.errorCode
+            _showScanErrorMessage.emit(scanResults.errorCode)
         } else {
-            //_scanDevices.clear() TODO
+            _scanDevices.clear()
             val items = mutableMapOf<String, String>()
 
 //            scanResults.devices.forEach { bluetoothDevice ->
@@ -92,11 +90,7 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
                 items[bluetoothDevice.name] = bluetoothDevice.address
             }
 
-            if(_scanDevices.size > 1) {
-                Log.d(TAG, "SCAN DEVICE 1 == SCAN DEVICE 2 TRUE??? ${_scanDevices[0] == _scanDevices[1]}")
-            }
-
-            _showScanDevices.value = items
+            _showScanDevices.emit(items.toMap())
         }
     }
 

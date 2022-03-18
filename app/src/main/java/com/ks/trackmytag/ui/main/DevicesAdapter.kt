@@ -10,7 +10,7 @@ import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.data.State
 import com.ks.trackmytag.databinding.ItemDeviceBinding
 
-class DevicesAdapter(private val clickListener: ClickListener, private val connectionStates: ConnectionStates) :
+class DevicesAdapter(private val connectionStates: ConnectionStates, private val clickListener: ClickListener) :
     ListAdapter<Device, DevicesAdapter.ViewHolder>(EntriesDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
