@@ -7,9 +7,9 @@ import com.ks.trackmytag.bluetooth.connection.ConnectionResponse
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.data.DeviceRepository
+import com.ks.trackmytag.data.State
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,6 +19,9 @@ private const val TAG = "MainViewModel"
 class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepository) : ViewModel() {
 
     val savedDevices = deviceRepository.getSavedDevices()
+
+    private val _connectionStates = mutableMapOf<String, State>()
+    val connectionStates = ConnectionStates(_connectionStates.toMap())
 
     private val _scanDevices = mutableListOf<BluetoothDevice>()
 
@@ -30,6 +33,26 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
     private val _deviceChanged = MutableLiveData<Int>()
     val deviceChanged: LiveData<Int> get() = _deviceChanged
 
+    private val connectionResponseStateFlow = deviceRepository.getConnectionResponseStateFlow()
+
+    init {
+        viewModelScope.launch {
+            connectionResponseStateFlow.collectLatest { connectionResponse ->
+                connectionResponse.deviceAddress?.let {
+                    _connectionStates[it] = connectionResponse.newState
+
+                    savedDevices.collectLatest { devicesList ->
+                        val device = devicesList.find { it.address == connectionResponse.deviceAddress }
+                        device?.let {
+                            _connectionStates[it.address] = connectionResponse.newState
+                            connectionStates.connectionStates = _connectionStates.toMap()
+                            _deviceChanged.postValue(devicesList.indexOf(it))
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     fun setupBle() { deviceRepository.setupBle() }
 
@@ -53,7 +76,7 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
 
             _showScanErrorMessage.value = scanResults.errorCode
         } else {
-            _scanDevices.clear()
+            //_scanDevices.clear() TODO
             val items = mutableMapOf<String, String>()
 
 //            scanResults.devices.forEach { bluetoothDevice ->
@@ -69,6 +92,10 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
                 items[bluetoothDevice.name] = bluetoothDevice.address
             }
 
+            if(_scanDevices.size > 1) {
+                Log.d(TAG, "SCAN DEVICE 1 == SCAN DEVICE 2 TRUE??? ${_scanDevices[0] == _scanDevices[1]}")
+            }
+
             _showScanDevices.value = items
         }
     }
@@ -77,14 +104,8 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
         viewModelScope.launch {
             val device = Device(null, name, _scanDevices[index].address)
             device.bluetoothDevice = _scanDevices[index]
+
             deviceRepository.saveAndConnectDevice(device)
         }
     }
-
-    fun onConnectionResponseReceived(connectionResponse: ConnectionResponse) {
-//        val device = savedDevices.value!!.find { it.address == connectionResponse.deviceAddress }
-//        device?.let {
-//            it.state = connectionResponse.newState
-//            _deviceChanged.postValue(savedDevices.value!!.indexOf(it))
-        }
 }

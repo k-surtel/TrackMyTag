@@ -1,10 +1,9 @@
 package com.ks.trackmytag.data
 
-import androidx.lifecycle.LiveData
 import com.ks.trackmytag.bluetooth.connection.ConnectionResponse
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 
 interface DeviceRepository {
 
@@ -16,5 +15,5 @@ interface DeviceRepository {
 
     suspend fun saveAndConnectDevice(device: Device)
 
-    fun getConnectionResponse(): LiveData<ConnectionResponse>
+    fun getConnectionResponseStateFlow(): StateFlow<ConnectionResponse>
 }

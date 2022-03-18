@@ -6,6 +6,10 @@
         <variable
             name="device"
             type="com.ks.trackmytag.data.Device" />
+
+        <variable
+            name="connectionStates"
+            type="com.ks.trackmytag.ui.main.ConnectionStates" />
 <!--        <variable-->
 <!--            name="clickListener"-->
 <!--            type="com.ks.langapp.ui.adapters.CardsListener" />-->
@@ -38,7 +42,7 @@
                 android:id="@+id/status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{device.state.toString()}"
+                setStateText="@{connectionStates.connectionStates.get(device.address)}"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/name"/>
 

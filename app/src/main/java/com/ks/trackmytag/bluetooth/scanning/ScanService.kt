@@ -9,7 +9,6 @@ import com.ks.trackmytag.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 
-
 class ScanService(private val context: Context) {
 
     private var scanTime = 5000L
@@ -26,10 +25,6 @@ class ScanService(private val context: Context) {
     fun setupBle() {
         bluetoothScanner = bluetoothManager.adapter.bluetoothLeScanner
         settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_POWER).build()
-    }
-
-    fun setScanTime(time: Long) {
-        scanTime = time
     }
 
     suspend fun scan() = flow {

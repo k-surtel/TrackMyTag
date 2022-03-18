@@ -2,7 +2,6 @@ package com.ks.trackmytag.bluetooth.scanning
 
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
-import android.util.Log
 
 object ScanCallback : ScanCallback() {
 

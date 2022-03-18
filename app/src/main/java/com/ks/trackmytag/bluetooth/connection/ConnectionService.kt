@@ -2,24 +2,50 @@ package com.ks.trackmytag.bluetooth.connection
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import com.ks.trackmytag.bluetooth.scanning.ScanResults
-import com.ks.trackmytag.data.State
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+private const val TAG = "ConnectionService"
 
 class ConnectionService(private val context: Context) {
 
-    private val _connectionResponse = MutableLiveData<ConnectionResponse>()
-    val connectionResponse: LiveData<ConnectionResponse> get() = _connectionResponse
+    fun getConnectionResponseStateFlow(): StateFlow<ConnectionResponse> =
+        BluetoothGattCallback.connectionStateFlow.asStateFlow()
 
-//    private val _connectionResponse = MutableSharedFlow<ScanResults>()
-//    val connectionResponse: SharedFlow<ScanResults> get() = _connectionResponse
+//    @SuppressLint("MissingPermission") //TODO
+//    suspend fun connectWithDevice3(device: BluetoothDevice): ConnectionResponse {
+//        Log.d(TAG, "connectWithDevice3: called")
+//        return suspendCoroutine { continuation ->
+//
+//            val connectionResponse = ConnectionResponse("", State.UNKNOWN)
+//
+//            val bluetoothGatt = device.connectGatt(context, false, object : BluetoothGattCallback() {
+//
+//                override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
+//                    Log.d(TAG, "onConnectionStateChange: called; newState = $newState")
+//                    gatt?.let {
+//                        val state = when (newState) {
+//                            BluetoothProfile.STATE_DISCONNECTED -> State.DISCONNECTED
+//                            BluetoothProfile.STATE_CONNECTED -> State.CONNECTED
+//                            else -> State.UNKNOWN
+//                        }
+//                        connectionResponse.deviceAddress = gatt.device.address
+//                        connectionResponse.newState = state
+//                    }
+//
+//                    continuation.resume(connectionResponse) // unhandled exception already resumed...
+//                }
+//            })
+//        }
+//    }
 
-    fun connectWithDevice(device: BluetoothDevice) {
-        val connectionResponse = ConnectionResponse("", State.UNKNOWN)
-        val bluetoothGatt = device.connectGatt(context, false, BluetoothGattCallback(connectionResponse))
+//        fun connectWithDevice2(device: BluetoothDevice) {
+//            val connectionResponse = ConnectionResponse("", State.UNKNOWN)
+//            val bluetoothGatt = device.connectGatt(context, false, BluetoothGattCallback)
+//        }
+//
+        fun connectWithDevice(device: BluetoothDevice) {
+            val bluetoothGatt = device.connectGatt(context, false, BluetoothGattCallback)
+        }
     }
-}
 

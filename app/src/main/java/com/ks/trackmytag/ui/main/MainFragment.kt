@@ -29,7 +29,10 @@ import com.ks.trackmytag.bluetooth.isBleSupported
 import com.ks.trackmytag.databinding.FragmentMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+
+private const val TAG = "MainFragment"
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {
@@ -46,7 +49,7 @@ class MainFragment : Fragment() {
 
         val adapter = DevicesAdapter(ClickListener { device ->
             /// viewModel.onCardClicked(card)
-        })
+        }, viewModel.connectionStates)
         binding.devices.adapter = adapter
 
         viewModel.showScanErrorMessage.observe(viewLifecycleOwner) {
@@ -54,16 +57,14 @@ class MainFragment : Fragment() {
         }
 
         viewModel.showScanDevices.observe(viewLifecycleOwner) {
-            showScanDevices(it)
+            showScanDevices(it) // TODO (shows after rotation)
         }
 
         lifecycle.coroutineScope.launch {
-            viewModel.savedDevices.collect { adapter.submitList(it) }
+            viewModel.savedDevices.collectLatest { adapter.submitList(it) }
         }
 
-        viewModel.deviceChanged.observe(viewLifecycleOwner) {
-            it?.let { adapter.notifyItemChanged(it) }
-        }
+        viewModel.deviceChanged.observe(viewLifecycleOwner) { adapter.notifyItemChanged(it) }
 
         if(isBleSupported(requireContext())) { requestBluetoothEnable() }
         requestLocationPermission() //TODO dialog w/ explanation

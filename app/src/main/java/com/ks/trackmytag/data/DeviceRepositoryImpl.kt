@@ -1,14 +1,15 @@
 package com.ks.trackmytag.data
 
-import androidx.lifecycle.LiveData
+import android.util.Log
 import com.ks.trackmytag.bluetooth.BleManager
 import com.ks.trackmytag.bluetooth.connection.ConnectionResponse
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.data.database.DevicesDao
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
+
+private const val TAG = "DeviceRepositoryImpl"
 
 class DeviceRepositoryImpl @Inject constructor(
     private val bleManager: BleManager,
@@ -24,11 +25,14 @@ class DeviceRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveAndConnectDevice(device: Device) {
+        Log.d(TAG, "saveAndConnectDevice: called")
         devicesDao.insertDevice(device)
-        device.bluetoothDevice?.let { bleManager.connectWithDevice(it) }
+        device.bluetoothDevice?.let {
+            bleManager.connectWithDevice(it)
+        }
     }
 
-    override fun getConnectionResponse(): LiveData<ConnectionResponse> {
-        return bleManager.connectionResponse
+    override fun getConnectionResponseStateFlow(): StateFlow<ConnectionResponse> {
+        return bleManager.getConnectionResponseStateFlow()
     }
 }
