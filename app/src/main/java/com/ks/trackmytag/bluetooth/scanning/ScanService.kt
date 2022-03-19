@@ -18,9 +18,6 @@ class ScanService(private val context: Context) {
     private var settings: ScanSettings? = null
     private var isScanActive = false
 
-    private val _scanResultsFlow = MutableSharedFlow<ScanResults>()
-    val scanResultsFlow: SharedFlow<ScanResults> get() = _scanResultsFlow
-
 
     fun setupBle() {
         bluetoothScanner = bluetoothManager.adapter.bluetoothLeScanner
@@ -29,10 +26,9 @@ class ScanService(private val context: Context) {
 
     suspend fun scan() = flow {
         if(!isScanActive) {
-            ScanCallback.prepareForScan()
-
             isScanActive = true
             Toast.makeText(context, R.string.scanning_started, Toast.LENGTH_SHORT).show()
+            ScanCallback.scanResults = ScanResults()
 
             bluetoothScanner?.startScan(null, settings, ScanCallback)
             delay(scanTime)

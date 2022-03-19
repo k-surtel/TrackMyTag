@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -66,7 +65,7 @@ class MainFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId) {
         R.id.action_add -> {
-            viewModel.addNewDevice()
+            viewModel.findNewDevice()
             true
         }
         R.id.action_settings -> {

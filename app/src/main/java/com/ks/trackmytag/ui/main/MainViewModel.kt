@@ -32,9 +32,9 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
 
     private val _connectionResponseStateFlow = deviceRepository.getConnectionResponseStateFlow()
 
-    init { setupConnectionStateChanges() }
+    init { setupConnectionStateObserver() }
 
-    private fun setupConnectionStateChanges() {
+    private fun setupConnectionStateObserver() {
         viewModelScope.launch {
             _connectionResponseStateFlow.collectLatest { connectionResponse ->
                 connectionResponse.deviceAddress?.let {
@@ -55,7 +55,7 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
 
     fun setupBle() { deviceRepository.setupBle() }
 
-    fun addNewDevice() {
+    fun findNewDevice() {
         viewModelScope.launch {
             deviceRepository.findNewDevices().collectLatest {
                 processFoundDevices(it)

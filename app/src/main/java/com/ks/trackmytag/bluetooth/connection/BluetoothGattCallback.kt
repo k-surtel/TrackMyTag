@@ -18,7 +18,6 @@ object BluetoothGattCallback : BluetoothGattCallback() {
                 BluetoothProfile.STATE_CONNECTED -> State.CONNECTED
                 else -> State.UNKNOWN
             }
-
             connectionStateFlow.value = ConnectionResponse(gatt.device.address, state)
         }
     }
