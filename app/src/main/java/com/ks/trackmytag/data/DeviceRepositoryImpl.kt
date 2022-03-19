@@ -5,6 +5,7 @@ import com.ks.trackmytag.bluetooth.BleManager
 import com.ks.trackmytag.bluetooth.connection.ConnectionResponse
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.data.database.DevicesDao
+import com.ks.trackmytag.data.preferences.PreferencesManager
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
@@ -12,7 +13,8 @@ private const val TAG = "DeviceRepositoryImpl"
 
 class DeviceRepositoryImpl @Inject constructor(
     private val bleManager: BleManager,
-    private val devicesDao: DevicesDao
+    private val devicesDao: DevicesDao,
+    private val preferencesManager: PreferencesManager
     ) : DeviceRepository {
 
     override fun getSavedDevices() = devicesDao.getSavedDevices()
@@ -23,18 +25,20 @@ class DeviceRepositoryImpl @Inject constructor(
 
     override fun setupBle() { bleManager.setupBle() }
 
+    private suspend fun getScanTime(): Long {
+        return preferencesManager.preferencesFlow.first().scanTime.toLong()
+    }
+
     override suspend fun findNewDevices(): Flow<ScanResults> {
-        return bleManager.scan().map {
+        return bleManager.scan(getScanTime()).map {
             filterNewDevices(it)
         }
     }
 
     private suspend fun filterNewDevices(scanResults: ScanResults): ScanResults {
-        val savedAddresses = getSavedDevicesAddresses().firstOrNull()
-        savedAddresses?.let {
-            scanResults.devices.forEach {
-                if(savedAddresses.contains(it.address)) scanResults.devices.remove(it)
-            }
+        val savedAddresses = getSavedDevicesAddresses().first()
+        scanResults.devices.forEach {
+            if(savedAddresses.contains(it.address)) scanResults.devices.remove(it)
         }
         return scanResults
     }

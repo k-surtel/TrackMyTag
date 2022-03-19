@@ -69,7 +69,7 @@ class MainFragment : Fragment() {
             true
         }
         R.id.action_settings -> {
-            findNavController().navigate(MainFragmentDirections.actionMainFragmentToSettingsFragment())
+            findNavController().navigate(MainFragmentDirections.actionMainFragmentToPreferencesFragment())
             true
         }
         else -> super.onOptionsItemSelected(item)

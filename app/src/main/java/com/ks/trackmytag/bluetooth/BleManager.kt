@@ -21,7 +21,7 @@ class BleManager @Inject constructor(@ApplicationContext context: Context) {
 
     fun setupBle() { scanService.setupBle() }
 
-    suspend fun scan(): Flow<ScanResults> = scanService.scan()
+    suspend fun scan(scanTime: Long): Flow<ScanResults> = scanService.scan(scanTime)
 
     fun connectWithDevice(device: BluetoothDevice) {
         connectionService.connectWithDevice(device)

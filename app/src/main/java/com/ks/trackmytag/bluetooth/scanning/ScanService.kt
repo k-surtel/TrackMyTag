@@ -11,8 +11,6 @@ import kotlinx.coroutines.flow.*
 
 class ScanService(private val context: Context) {
 
-    private var scanTime = 5000L
-
     private val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     private var bluetoothScanner: BluetoothLeScanner? = null
     private var settings: ScanSettings? = null
@@ -24,7 +22,7 @@ class ScanService(private val context: Context) {
         settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_POWER).build()
     }
 
-    suspend fun scan() = flow {
+    suspend fun scan(scanTime: Long) = flow {
         if(!isScanActive) {
             isScanActive = true
             Toast.makeText(context, R.string.scanning_started, Toast.LENGTH_SHORT).show()

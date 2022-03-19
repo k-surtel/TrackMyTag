@@ -2,7 +2,6 @@ package com.ks.trackmytag.data.preferences
 
 import android.util.Log
 import androidx.datastore.core.DataStore
-import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.*
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -15,7 +14,7 @@ data class AppPreferences(val scanTime: String)
 
 class PreferencesManager @Inject constructor(private val dataStore: DataStore<Preferences>) {
 
-    private object PreferencesKeys {
+    object PreferencesKeys {
         val SCAN_TIME = stringPreferencesKey("scan_time")
     }
 
