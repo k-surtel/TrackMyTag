@@ -16,4 +16,6 @@ interface DevicesDao {
     @Query("SELECT * FROM devices")
     fun getSavedDevices(): Flow<List<Device>>
 
+    @Query("SELECT address FROM devices")
+    fun getSavedDevicesAddresses(): Flow<List<String>>
 }

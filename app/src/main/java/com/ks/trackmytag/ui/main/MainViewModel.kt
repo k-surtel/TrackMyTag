@@ -77,14 +77,6 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
             _scanDevices.clear()
             val items = mutableMapOf<String, String>()
 
-//            scanResults.devices.forEach { bluetoothDevice ->
-//                if(!savedDevices.value!!.any { it.address == bluetoothDevice.address}){
-//                    _scanDevices.add(bluetoothDevice)
-//                    items[bluetoothDevice.name] = bluetoothDevice.address
-//                }
-//            }
-
-            //temporary
             scanResults.devices.forEach { bluetoothDevice ->
                 _scanDevices.add(bluetoothDevice)
                 items[bluetoothDevice.name] = bluetoothDevice.address
@@ -99,7 +91,7 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
             val device = Device(null, name, _scanDevices[index].address)
             device.bluetoothDevice = _scanDevices[index]
 
-            deviceRepository.saveAndConnectDevice(device)
+            deviceRepository.saveDeviceAndConnect(device)
         }
     }
 }

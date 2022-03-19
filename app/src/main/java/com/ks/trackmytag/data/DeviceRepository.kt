@@ -9,11 +9,13 @@ interface DeviceRepository {
 
     fun getSavedDevices(): Flow<List<Device>>
 
+    fun getSavedDevicesAddresses(): Flow<List<String>>
+
     fun setupBle()
 
     suspend fun findNewDevices(): Flow<ScanResults>
 
-    suspend fun saveAndConnectDevice(device: Device)
+    suspend fun saveDeviceAndConnect(device: Device)
 
     fun getConnectionResponseStateFlow(): StateFlow<ConnectionResponse>
 }
