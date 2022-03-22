@@ -24,6 +24,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.ks.trackmytag.R
 import com.ks.trackmytag.bluetooth.isBleSupported
 import com.ks.trackmytag.databinding.FragmentMainBinding
+import com.ks.trackmytag.ui.adapters.ClickListener
+import com.ks.trackmytag.ui.adapters.DevicesAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest

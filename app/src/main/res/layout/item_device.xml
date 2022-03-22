@@ -9,7 +9,7 @@
 
         <variable
             name="connectionStates"
-            type="com.ks.trackmytag.ui.main.ConnectionStates" />
+            type="com.ks.trackmytag.ui.adapters.ConnectionStates" />
 <!--        <variable-->
 <!--            name="clickListener"-->
 <!--            type="com.ks.langapp.ui.adapters.CardsListener" />-->

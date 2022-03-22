@@ -1,4 +1,4 @@
-package com.ks.trackmytag.ui.binding
+package com.ks.trackmytag.ui.adapters
 
 import android.view.View
 import android.widget.TextView

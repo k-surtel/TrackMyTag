@@ -1,4 +1,4 @@
-package com.ks.trackmytag.ui.main
+package com.ks.trackmytag.ui.adapters
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater

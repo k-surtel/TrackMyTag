@@ -6,6 +6,7 @@ import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.data.DeviceRepository
 import com.ks.trackmytag.data.State
+import com.ks.trackmytag.ui.adapters.ConnectionStates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
