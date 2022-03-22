@@ -5,7 +5,7 @@
     <string name="scanning_started">Scanning has been started</string>
     <string name="scanning_finished">Scanning has finished</string>
     <string name="no_ble">No BLE</string>
-    <string name="no_ble_support">This device doesn\'t support Bluetooth Low Energy technology!</string>
+    <string name="no_ble_support">Sorry, this device does not support Bluetooth Low Energy technology!</string>
     <string name="choose_device">Choose device</string>
     <string name="no_devices_found">No devices found!</string>
     <string name="name_device">Name your device</string>

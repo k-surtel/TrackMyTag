@@ -1,7 +1,11 @@
 package com.ks.trackmytag.ui.main
 
+import android.Manifest
 import android.bluetooth.BluetoothDevice
+import android.content.Context
+import android.os.Build
 import androidx.lifecycle.*
+import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.data.DeviceRepository
@@ -15,9 +19,9 @@ import javax.inject.Inject
 private const val TAG = "MainViewModel"
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepository) : ViewModel() {
+class MainViewModel @Inject constructor(private val repository: DeviceRepository) : ViewModel() {
 
-    val savedDevices = deviceRepository.getSavedDevices()
+    val savedDevices = repository.getSavedDevices()
 
     private val _connectionStates = mutableMapOf<String, State>()
     val connectionStates = ConnectionStates(_connectionStates.toMap())
@@ -31,7 +35,10 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
     private val _deviceChanged = MutableSharedFlow<Int>()
     val deviceChanged = _deviceChanged.asSharedFlow()
 
-    private val _connectionResponseStateFlow = deviceRepository.getConnectionResponseStateFlow()
+    private val _connectionResponseStateFlow = repository.getConnectionResponseStateFlow()
+
+    val requestPermission = RequestManager.getRequestPermissionSharedFlow()
+    val requestBluetoothEnabled = RequestManager.getRequestBluetoothEnabledSharedFlow()
 
     init { setupConnectionStateObserver() }
 
@@ -54,11 +61,11 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
         }
     }
 
-    fun setupBle() { deviceRepository.setupBle() }
+    fun setupBle() { repository.setupBle() }
 
     fun findNewDevice() {
         viewModelScope.launch {
-            deviceRepository.findNewDevices().collectLatest {
+            repository.findNewDevices().collectLatest {
                 processFoundDevices(it)
             }
         }
@@ -75,9 +82,7 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
             //6 - Fails to start scan as application tries to scan too frequently.
             _showScanErrorMessage.emit(scanResults.errorCode)
         } else {
-            _scanDevices.clear()
             val items = mutableMapOf<String, String>()
-
             scanResults.devices.forEach { bluetoothDevice ->
                 _scanDevices.add(bluetoothDevice)
                 items[bluetoothDevice.name] = bluetoothDevice.address
@@ -87,12 +92,26 @@ class MainViewModel @Inject constructor(private val deviceRepository: DeviceRepo
         }
     }
 
-    fun saveDevice(index: Int, name: String) {
-        viewModelScope.launch {
-            val device = Device(null, name, _scanDevices[index].address)
-            device.bluetoothDevice = _scanDevices[index]
+    fun saveDevice(index: Int, name: String) = viewModelScope.launch {
+        val device = Device(null, name, _scanDevices[index].address)
+        device.bluetoothDevice = _scanDevices[index]
 
-            deviceRepository.saveDeviceAndConnect(device)
+        repository.saveDeviceAndConnect(device)
+        _scanDevices.clear()
+    }
+
+    fun handlePermissionsAndBluetooth(context: Context) {
+        if(!RequestManager.checkPermissionGranted(context, Manifest.permission.ACCESS_COARSE_LOCATION))
+            viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.ACCESS_COARSE_LOCATION) }
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if(!RequestManager.checkPermissionGranted(context, Manifest.permission.BLUETOOTH_SCAN))
+                viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.BLUETOOTH_SCAN) }
+
+            if(!RequestManager.checkPermissionGranted(context, Manifest.permission.BLUETOOTH_CONNECT))
+                viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.BLUETOOTH_CONNECT) }
         }
+
+        viewModelScope.launch { RequestManager.requestBluetoothEnabled() }
     }
 }
