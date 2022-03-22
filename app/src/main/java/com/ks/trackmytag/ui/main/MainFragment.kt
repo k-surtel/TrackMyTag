@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -13,6 +14,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -89,7 +91,15 @@ class MainFragment : Fragment() {
     }
 
     private fun requestPermission(launcher: ActivityResultLauncher<String>, permission: String) {
-        launcher.launch(permission)
+        if (!ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), permission)) {
+
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.permission_denied)
+                .setMessage(resources.getString(R.string.permission_denied_description))
+                .setPositiveButton(R.string.ok, null)
+                .show()
+
+        } else launcher.launch(permission)
     }
 
     private fun showNoBleToast() {
@@ -100,6 +110,7 @@ class MainFragment : Fragment() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.scanning_error)
             .setMessage(resources.getString(R.string.scanning_error_message, errorCode))
+            .setPositiveButton(R.string.ok, null)
             .show()
     }
 
@@ -118,6 +129,10 @@ class MainFragment : Fragment() {
                 .setItems(devicesArray) { _, which ->
                     chooseDevice(which)
                 }
+                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .setCancelable(false)
                 .show()
         }
     }
@@ -132,7 +147,8 @@ class MainFragment : Fragment() {
             .setPositiveButton(R.string.ok) { _, _ ->
                 viewModel.saveDevice(index, input.text.toString())
             }
-            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.cancel() }
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setCancelable(false)
             .show()
     }
 }
