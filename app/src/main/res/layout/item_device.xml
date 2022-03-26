@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
         <variable
@@ -15,6 +16,7 @@
     </data>
 
     <com.google.android.material.card.MaterialCardView
+        app:cardBackgroundColor="@color/light_gray"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
@@ -27,41 +29,57 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_height="wrap_content"
-            android:layout_width="match_parent">
+            android:layout_width="match_parent"
+            android:padding="@dimen/margin_large">
 
             <TextView
                 android:id="@+id/name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@{device.name}"
+                tools:text="Device one"
+                android:textSize="@dimen/large_text"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
 
-            <TextView
-                android:id="@+id/status"
+            <ImageButton
+                android:id="@+id/delete_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                setStateText="@{connectionStates.states.get(device.address)}"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/name"/>
+                android:drawableStart="@drawable/icon_delete"
+                android:src="@drawable/icon_delete"
+                android:contentDescription="@string/delete_device"
+                android:onClick="@{() -> clickListener.onDeleteClick(device)}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/connection_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="@{() -> clickListener.onConnectClick(device)}"
                 setButtonText="@{connectionStates.states.get(device.address)}"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/status" />
+                setButtonColor="@{connectionStates.states.get(device.address)}"
+                android:onClick="@{() -> clickListener.onConnectClick(device)}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/settings_button" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/remove_button"
+                android:id="@+id/settings_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="@{() -> clickListener.onDeleteClick(device)}"
-                android:text="@string/remove_device"
-                app:layout_constraintStart_toEndOf="@id/connection_button"
+                android:text="@string/settings"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/alarm_button" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/alarm_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/alarm"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
+
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
