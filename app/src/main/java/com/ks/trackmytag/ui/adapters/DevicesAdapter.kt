@@ -10,7 +10,7 @@ import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.data.State
 import com.ks.trackmytag.databinding.ItemDeviceBinding
 
-class DevicesAdapter(private val connectionStates: ConnectionStates, private val clickListener: ClickListener) :
+class DevicesAdapter(private val connectionStates: ConnectionStates, private val clickListener: DeviceClickListener) :
     ListAdapter<Device, DevicesAdapter.ViewHolder>(EntriesDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -23,10 +23,10 @@ class DevicesAdapter(private val connectionStates: ConnectionStates, private val
 
     class ViewHolder private constructor(val binding: ItemDeviceBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(device: Device, connectionStates: ConnectionStates, clickListener: ClickListener) {
+        fun bind(device: Device, connectionStates: ConnectionStates, clickListener: DeviceClickListener) {
             binding.device = device
-//            binding.clickListener = clickListener
             binding.connectionStates = connectionStates
+            binding.clickListener = clickListener
             binding.executePendingBindings()
         }
 
@@ -50,8 +50,12 @@ class EntriesDiffCallback : DiffUtil.ItemCallback<Device>() {
     }
 }
 
-class ClickListener(val clickListener: (device: Device) -> Unit) {
-    fun onClick(device: Device) = clickListener(device)
+class DeviceClickListener(
+    val connectClickListener: (device: Device) -> Unit,
+    val deleteClickListener: (device: Device) -> Unit
+) {
+    fun onConnectClick(device: Device) = connectClickListener(device)
+    fun onDeleteClick(device: Device) = deleteClickListener(device)
 }
 
 class ConnectionStates(connectionStates: Map<String, State>) {

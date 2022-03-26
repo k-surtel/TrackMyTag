@@ -4,6 +4,7 @@ import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.lifecycle.*
 import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
@@ -61,9 +62,24 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
         }
     }
 
+    fun handlePermissionsAndBluetooth(context: Context) {
+        if(!RequestManager.checkPermissionGranted(context, Manifest.permission.ACCESS_COARSE_LOCATION))
+            viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.ACCESS_COARSE_LOCATION) }
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if(!RequestManager.checkPermissionGranted(context, Manifest.permission.BLUETOOTH_SCAN))
+                viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.BLUETOOTH_SCAN) }
+
+            if(!RequestManager.checkPermissionGranted(context, Manifest.permission.BLUETOOTH_CONNECT))
+                viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.BLUETOOTH_CONNECT) }
+        }
+
+        viewModelScope.launch { RequestManager.requestBluetoothEnabled() }
+    }
+
     fun setupBle() { repository.setupBle() }
 
-    fun findNewDevice() {
+    fun findDevices() {
         viewModelScope.launch {
             repository.findNewDevices().collectLatest {
                 processFoundDevices(it)
@@ -95,23 +111,31 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     fun saveDevice(index: Int, name: String) = viewModelScope.launch {
         val device = Device(null, name, _scanDevices[index].address)
         device.bluetoothDevice = _scanDevices[index]
-
-        repository.saveDeviceAndConnect(device)
+        repository.saveDevice(device)
         _scanDevices.clear()
     }
 
-    fun handlePermissionsAndBluetooth(context: Context) {
-        if(!RequestManager.checkPermissionGranted(context, Manifest.permission.ACCESS_COARSE_LOCATION))
-            viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.ACCESS_COARSE_LOCATION) }
+    fun deleteDevice(device: Device) {
+        viewModelScope.launch { repository.deleteDevice(device) }
+    }
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if(!RequestManager.checkPermissionGranted(context, Manifest.permission.BLUETOOTH_SCAN))
-                viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.BLUETOOTH_SCAN) }
+    fun onConnectionChangeClick(device: Device) {
+        val connectionState = connectionStates.states[device.address]
 
-            if(!RequestManager.checkPermissionGranted(context, Manifest.permission.BLUETOOTH_CONNECT))
-                viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.BLUETOOTH_CONNECT) }
+        if(connectionState == State.CONNECTED)
+            disconnectDevice(device)
+        else connectWithDevice(device)
+    }
+
+    fun connectWithDevice(device: Device) {
+        Log.d(TAG, "connectWithDevice: called")
+        viewModelScope.launch { repository.connectWithDevice(device) }
+    }
+
+    fun disconnectDevice(device: Device) {
+        Log.d(TAG, "disconnectDevice: called!!!")
+        viewModelScope.launch {
+            repository.disconnectDevice(device)
         }
-
-        viewModelScope.launch { RequestManager.requestBluetoothEnabled() }
     }
 }

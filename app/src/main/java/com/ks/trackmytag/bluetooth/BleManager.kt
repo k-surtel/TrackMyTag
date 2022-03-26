@@ -7,14 +7,18 @@ import com.ks.trackmytag.bluetooth.connection.ConnectionResponse
 import com.ks.trackmytag.bluetooth.connection.ConnectionService
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.bluetooth.scanning.ScanService
+import com.ks.trackmytag.data.Device
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import javax.inject.Inject
 
 private const val TAG = "BleManager"
 
 class BleManager @Inject constructor(@ApplicationContext context: Context) {
+
+    private val devices = mutableListOf<BluetoothDevice>()
 
     private val scanService = ScanService(context)
     private val connectionService = ConnectionService(context)
@@ -23,10 +27,34 @@ class BleManager @Inject constructor(@ApplicationContext context: Context) {
 
     suspend fun scan(scanTime: Long): Flow<ScanResults> = scanService.scan(scanTime)
 
-    suspend fun connectWithDevice(device: BluetoothDevice) {
-        connectionService.connectWithDevice(device)
+    private suspend fun searchForDevice(address: String, scanTime: Long): BluetoothDevice? {
+        var device: BluetoothDevice? = null
+        scanService.searchForDevice(address, scanTime).collectLatest {
+            device = it
+        }
+        return device
     }
 
     fun getConnectionResponseStateFlow(): StateFlow<ConnectionResponse> =
         connectionService.getConnectionResponseStateFlow()
+
+    suspend fun connectWithDevice(device: Device, scanTime: Long) {
+        var bluetoothDevice = device.bluetoothDevice
+
+        if(bluetoothDevice == null)
+            bluetoothDevice = devices.find { it.address == device.address }
+
+        if(bluetoothDevice == null)
+            bluetoothDevice = searchForDevice(device.address, scanTime)
+
+        bluetoothDevice?.let {
+            devices.add(it)
+            connectionService.connectWithDevice(bluetoothDevice)
+        }
+    }
+
+    suspend fun disconnectDevice(device: Device) {
+        val bluetoothDevice = devices.find { it.address == device.address }
+        bluetoothDevice?.let { connectionService.disconnectDevice(it) }
+    }
 }

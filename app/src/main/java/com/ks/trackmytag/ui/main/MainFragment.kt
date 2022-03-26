@@ -14,7 +14,6 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -23,8 +22,10 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.ks.trackmytag.R
 import com.ks.trackmytag.bluetooth.RequestManager
+import com.ks.trackmytag.data.Device
+import com.ks.trackmytag.data.State
 import com.ks.trackmytag.databinding.FragmentMainBinding
-import com.ks.trackmytag.ui.adapters.ClickListener
+import com.ks.trackmytag.ui.adapters.DeviceClickListener
 import com.ks.trackmytag.ui.adapters.DevicesAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -51,9 +52,15 @@ class MainFragment : Fragment() {
             if (result.resultCode == Activity.RESULT_OK) { viewModel.setupBle() }
         }
 
-        val adapter = DevicesAdapter(viewModel.connectionStates, ClickListener { device ->
-            /// viewModel.onCardClicked(card)
-        })
+        val adapter = DevicesAdapter(viewModel.connectionStates, DeviceClickListener(
+            connectClickListener = {
+                viewModel.onConnectionChangeClick(it)
+            },
+            deleteClickListener = {
+                onDeleteDeviceClicked(it)
+            }
+        ))
+
         binding.devices.adapter = adapter
 
         lifecycleScope.launch { viewModel.savedDevices.collectLatest { adapter.submitList(it) } }
@@ -75,7 +82,7 @@ class MainFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId) {
         R.id.action_add -> {
-            if(RequestManager.isBleSupported()) viewModel.findNewDevice()
+            if(RequestManager.isBleSupported()) viewModel.findDevices()
             else showNoBleToast()
             true
         }
@@ -150,6 +157,18 @@ class MainFragment : Fragment() {
             }
             .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
             .setCancelable(false)
+            .show()
+    }
+
+    private fun onDeleteDeviceClicked(device: Device) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setMessage(R.string.delete_device_alert)
+            .setNegativeButton(R.string.no) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton(R.string.yes) { _, _ ->
+                viewModel.deleteDevice(device)
+            }
             .show()
     }
 }

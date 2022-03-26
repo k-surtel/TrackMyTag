@@ -2,6 +2,7 @@ package com.ks.trackmytag.bluetooth.scanning
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanSettings
@@ -41,6 +42,27 @@ class ScanService(private val context: Context) {
                 bluetoothScanner?.stopScan(ScanCallback)
 
                 emit(ScanCallback.scanResults)
+
+                isScanActive = false
+                Toast.makeText(context, R.string.scanning_finished, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    suspend fun searchForDevice(address: String, scanTime: Long) = flow<BluetoothDevice?> {
+        if(!isScanActive) {
+            if(checkPermissions()) {
+                isScanActive = true
+                Toast.makeText(context, R.string.scanning_started, Toast.LENGTH_SHORT).show()
+                ScanCallback.scanResults = ScanResults()
+
+                bluetoothScanner?.startScan(null, settings, ScanCallback)
+                delay(scanTime)
+                bluetoothScanner?.stopScan(ScanCallback)
+
+                val device = ScanCallback.scanResults.devices.find { it.address == address }
+                emit(device)
 
                 isScanActive = false
                 Toast.makeText(context, R.string.scanning_finished, Toast.LENGTH_SHORT).show()

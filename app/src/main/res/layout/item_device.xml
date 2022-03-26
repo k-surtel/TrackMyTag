@@ -6,13 +6,12 @@
         <variable
             name="device"
             type="com.ks.trackmytag.data.Device" />
-
         <variable
             name="connectionStates"
             type="com.ks.trackmytag.ui.adapters.ConnectionStates" />
-<!--        <variable-->
-<!--            name="clickListener"-->
-<!--            type="com.ks.langapp.ui.adapters.CardsListener" />-->
+        <variable
+            name="clickListener"
+            type="com.ks.trackmytag.ui.adapters.DeviceClickListener" />
     </data>
 
     <com.google.android.material.card.MaterialCardView
@@ -50,6 +49,7 @@
                 android:id="@+id/connection_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:onClick="@{() -> clickListener.onConnectClick(device)}"
                 setButtonText="@{connectionStates.states.get(device.address)}"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/status" />
@@ -58,6 +58,7 @@
                 android:id="@+id/remove_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:onClick="@{() -> clickListener.onDeleteClick(device)}"
                 android:text="@string/remove_device"
                 app:layout_constraintStart_toEndOf="@id/connection_button"
                 app:layout_constraintBottom_toBottomOf="parent" />

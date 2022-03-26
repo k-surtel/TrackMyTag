@@ -1,5 +1,6 @@
 package com.ks.trackmytag.data
 
+import android.bluetooth.BluetoothDevice
 import android.util.Log
 import com.ks.trackmytag.bluetooth.BleManager
 import com.ks.trackmytag.bluetooth.connection.ConnectionResponse
@@ -17,13 +18,17 @@ class DeviceRepositoryImpl @Inject constructor(
     private val preferencesManager: PreferencesManager
     ) : DeviceRepository {
 
+    override fun setupBle() { bleManager.setupBle() }
+
+    override fun getConnectionResponseStateFlow(): StateFlow<ConnectionResponse> {
+        return bleManager.getConnectionResponseStateFlow()
+    }
+
     override fun getSavedDevices() = devicesDao.getSavedDevices()
 
     override fun getSavedDevicesAddresses(): Flow<List<String>> {
         return devicesDao.getSavedDevicesAddresses()
     }
-
-    override fun setupBle() { bleManager.setupBle() }
 
     private suspend fun getScanTime(): Long {
         return preferencesManager.preferencesFlow.first().scanTime.toLong()
@@ -43,14 +48,21 @@ class DeviceRepositoryImpl @Inject constructor(
         return scanResults
     }
 
-    override suspend fun saveDeviceAndConnect(device: Device) {
+    override suspend fun saveDevice(device: Device) {
         devicesDao.insertDevice(device)
-        device.bluetoothDevice?.let {
-            bleManager.connectWithDevice(it)
-        }
+        bleManager.connectWithDevice(device, getScanTime())
     }
 
-    override fun getConnectionResponseStateFlow(): StateFlow<ConnectionResponse> {
-        return bleManager.getConnectionResponseStateFlow()
+    override suspend fun deleteDevice(device: Device) {
+        devicesDao.deleteDevice(device)
+        bleManager.disconnectDevice(device)
+    }
+
+    override suspend fun connectWithDevice(device: Device) {
+        bleManager.connectWithDevice(device, getScanTime())
+    }
+
+    override suspend fun disconnectDevice(device: Device) {
+        bleManager.disconnectDevice(device)
     }
 }
