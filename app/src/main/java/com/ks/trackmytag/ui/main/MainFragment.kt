@@ -91,15 +91,16 @@ class MainFragment : Fragment() {
     }
 
     private fun requestPermission(launcher: ActivityResultLauncher<String>, permission: String) {
-        if (!ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), permission)) {
+        launcher.launch(permission)
 
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.permission_denied)
-                .setMessage(resources.getString(R.string.permission_denied_description))
-                .setPositiveButton(R.string.ok, null)
-                .show()
-
-        } else launcher.launch(permission)
+//        if (!ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), permission)) {
+//
+//            MaterialAlertDialogBuilder(requireContext())
+//                .setTitle(R.string.permission_denied)
+//                .setMessage(resources.getString(R.string.permission_denied_description))
+//                .setPositiveButton(R.string.ok, null)
+//                .show()
+//        }
     }
 
     private fun showNoBleToast() {
