@@ -63,8 +63,8 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     }
 
     fun handlePermissionsAndBluetooth(context: Context) {
-        if(!RequestManager.checkPermissionGranted(context, Manifest.permission.ACCESS_COARSE_LOCATION))
-            viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.ACCESS_COARSE_LOCATION) }
+        if(!RequestManager.checkPermissionGranted(context, Manifest.permission.ACCESS_FINE_LOCATION))
+            viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.ACCESS_FINE_LOCATION) }
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if(!RequestManager.checkPermissionGranted(context, Manifest.permission.BLUETOOTH_SCAN))

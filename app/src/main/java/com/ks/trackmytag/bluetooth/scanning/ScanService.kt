@@ -11,8 +11,6 @@ import android.os.Build
 import android.widget.Toast
 import com.ks.trackmytag.R
 import com.ks.trackmytag.bluetooth.RequestManager
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 
@@ -32,7 +30,7 @@ class ScanService(private val context: Context) {
     @SuppressLint("MissingPermission")
     suspend fun scan(scanTime: Long) = flow {
         if(!isScanActive) {
-            if(checkPermissions()) {
+            if(hasPermissions()) {
                 isScanActive = true
                 Toast.makeText(context, R.string.scanning_started, Toast.LENGTH_SHORT).show()
                 ScanCallback.scanResults = ScanResults()
@@ -52,7 +50,7 @@ class ScanService(private val context: Context) {
     @SuppressLint("MissingPermission")
     suspend fun searchForDevice(address: String, scanTime: Long) = flow<BluetoothDevice?> {
         if(!isScanActive) {
-            if(checkPermissions()) {
+            if(hasPermissions()) {
                 isScanActive = true
                 Toast.makeText(context, R.string.scanning_started, Toast.LENGTH_SHORT).show()
                 ScanCallback.scanResults = ScanResults()
@@ -70,7 +68,7 @@ class ScanService(private val context: Context) {
         }
     }
 
-    private suspend fun checkPermissions(): Boolean {
+    private suspend fun hasPermissions(): Boolean {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
             !RequestManager.checkPermissionGranted(context, Manifest.permission.BLUETOOTH_SCAN)) {
             RequestManager.requestPermission(Manifest.permission.BLUETOOTH_SCAN)
