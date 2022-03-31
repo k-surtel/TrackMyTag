@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
+import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.Build
@@ -25,6 +26,8 @@ class ScanService(private val context: Context) {
     fun setupBle() {
         bluetoothScanner = bluetoothManager.adapter.bluetoothLeScanner
         settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_POWER).build()
+
+        //val filter = ScanFilter.Builder().setDeviceAddress("dsd").build()
     }
 
     @SuppressLint("MissingPermission")

@@ -11,7 +11,7 @@ import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.data.DeviceRepository
 import com.ks.trackmytag.data.State
-import com.ks.trackmytag.ui.adapters.ConnectionStates
+import com.ks.trackmytag.ui.adapters.DeviceStates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -25,7 +25,8 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     val savedDevices = repository.getSavedDevices()
 
     private val _connectionStates = mutableMapOf<String, State>()
-    val connectionStates = ConnectionStates(_connectionStates.toMap())
+    private val _batteryLevels = mutableMapOf<String, Int>()
+    val deviceStates = DeviceStates(_connectionStates.toMap(), _batteryLevels.toMap())
 
     private val _scanDevices = mutableListOf<BluetoothDevice>()
 
@@ -48,12 +49,14 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
             _connectionResponseStateFlow.collectLatest { connectionResponse ->
                 connectionResponse.deviceAddress?.let {
                     _connectionStates[it] = connectionResponse.newState
+                    _batteryLevels[it] = connectionResponse.batteryLevel
 
                     savedDevices.collectLatest { devicesList ->
                         val device = devicesList.find { it.address == connectionResponse.deviceAddress }
                         device?.let {
                             _connectionStates[it.address] = connectionResponse.newState
-                            connectionStates.states = _connectionStates.toMap()
+                            deviceStates.connectionStates = _connectionStates.toMap()
+                            deviceStates.batteryStates = _batteryLevels.toMap()
                             _deviceChanged.emit(devicesList.indexOf(it))
                         }
                     }
@@ -120,7 +123,7 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     }
 
     fun onConnectionChangeClick(device: Device) {
-        val connectionState = connectionStates.states[device.address]
+        val connectionState = deviceStates.connectionStates[device.address]
 
         if(connectionState == State.CONNECTED)
             disconnectDevice(device)

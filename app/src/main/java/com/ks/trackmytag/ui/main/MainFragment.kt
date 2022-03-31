@@ -52,7 +52,7 @@ class MainFragment : Fragment() {
             if (result.resultCode == Activity.RESULT_OK) { viewModel.setupBle() }
         }
 
-        val adapter = DevicesAdapter(viewModel.connectionStates, DeviceClickListener(
+        val adapter = DevicesAdapter(viewModel.deviceStates, DeviceClickListener(
             connectClickListener = {
                 viewModel.onConnectionChangeClick(it)
             },
