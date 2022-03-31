@@ -39,7 +39,11 @@ class MainFragment : Fragment() {
 
     private val viewModel: MainViewModel by viewModels()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
 
         val binding: FragmentMainBinding = DataBindingUtil
             .inflate(inflater, R.layout.fragment_main, container, false)
@@ -47,14 +51,21 @@ class MainFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-        val permissionResultLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
-        val bluetoothResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) { viewModel.setupBle() }
-        }
+        val permissionResultLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+        val bluetoothResultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    viewModel.setupBle()
+                }
+            }
 
         val adapter = DevicesAdapter(viewModel.deviceStates, DeviceClickListener(
             connectClickListener = {
                 viewModel.onConnectionChangeClick(it)
+            },
+            alarmClickListener = {
+                viewModel.deviceAlarm(it)
             },
             deleteClickListener = {
                 onDeleteDeviceClicked(it)
@@ -65,24 +76,45 @@ class MainFragment : Fragment() {
 
         lifecycleScope.launch { viewModel.savedDevices.collectLatest { adapter.submitList(it) } }
 
-        lifecycleScope.launch { viewModel.showScanErrorMessage.collectLatest { showScanErrorMessage(it) } }
+        lifecycleScope.launch {
+            viewModel.showScanErrorMessage.collectLatest {
+                showScanErrorMessage(
+                    it
+                )
+            }
+        }
 
         lifecycleScope.launch { viewModel.showScanDevices.collectLatest { showFoundDevices(it) } }
 
         lifecycleScope.launch { viewModel.deviceChanged.collect { adapter.notifyItemChanged(it) } }
 
-        lifecycleScope.launch { viewModel.requestPermission.collectLatest { requestPermission(permissionResultLauncher, it) } }
+        lifecycleScope.launch {
+            viewModel.requestPermission.collectLatest {
+                requestPermission(
+                    permissionResultLauncher,
+                    it
+                )
+            }
+        }
 
-        lifecycleScope.launch { viewModel.requestBluetoothEnabled.collectLatest { requestBluetoothEnabled(bluetoothResultLauncher) } }
+        lifecycleScope.launch {
+            viewModel.requestBluetoothEnabled.collectLatest {
+                requestBluetoothEnabled(
+                    bluetoothResultLauncher
+                )
+            }
+        }
 
-        if(RequestManager.checkBleSupport(requireContext())) viewModel.handlePermissionsAndBluetooth(requireContext())
+        if (RequestManager.checkBleSupport(requireContext())) viewModel.handlePermissionsAndBluetooth(
+            requireContext()
+        )
 
         return binding.root
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.action_add -> {
-            if(RequestManager.isBleSupported()) viewModel.findDevices()
+            if (RequestManager.isBleSupported()) viewModel.findDevices()
             else showNoBleToast()
             true
         }
@@ -123,13 +155,14 @@ class MainFragment : Fragment() {
     }
 
     private fun showFoundDevices(devices: Map<String, String>) {
-        if(devices.isEmpty()) {
+        if (devices.isEmpty()) {
             Toast.makeText(context, R.string.no_devices_found, Toast.LENGTH_SHORT).show()
         } else {
             var devicesArray: Array<CharSequence> = emptyArray()
 
             devices.forEach {
-                devicesArray = devicesArray.plus(getString(R.string.new_devices_data, it.key, it.value))
+                devicesArray =
+                    devicesArray.plus(getString(R.string.new_devices_data, it.key, it.value))
             }
 
             MaterialAlertDialogBuilder(requireContext())

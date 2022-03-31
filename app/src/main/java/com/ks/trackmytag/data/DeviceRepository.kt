@@ -25,4 +25,6 @@ interface DeviceRepository {
     suspend fun connectWithDevice(device: Device)
 
     suspend fun disconnectDevice(device: Device)
+
+    fun deviceAlarm(device: Device)
 }

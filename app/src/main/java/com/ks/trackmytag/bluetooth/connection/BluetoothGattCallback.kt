@@ -78,6 +78,7 @@ object BluetoothGattCallback : BluetoothGattCallback() {
         // this will get called anytime you perform a read or write characteristic operation
         //we’ve enabled notifications or indications on a characteristic, any incoming notification or indication
         // is delivered via BluetoothGattCallback’s onCharacteristicChanged() callback
+        Log.d(TAG, "onCharacteristicChanged: CALLED")
 
     }
 

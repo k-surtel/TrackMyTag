@@ -21,6 +21,8 @@ class ConnectionService(private val context: Context) {
 
     private val gatts = mutableMapOf<String, BluetoothGatt>()
 
+    private var alarm = false
+
     fun getConnectionResponseStateFlow(): StateFlow<ConnectionResponse> =
         BluetoothGattCallback.connectionStateFlow.asStateFlow()
 
@@ -47,6 +49,24 @@ class ConnectionService(private val context: Context) {
         }
     }
 
+    fun deviceAlarm(address: String) {
+        val gatt = gatts[address]
+        gatt?.let { gatt ->
+            val service = gatt.getService(UUID.fromString(IMMEDIATE_ALERT_SERVICE))
+            val characteristic = service?.getCharacteristic(UUID.fromString(ALERT_LEVEL_CHARACTERISTIC))
+
+            characteristic?.let {
+                if(!alarm) {
+                    writeCharacteristic(gatt, it, byteArrayOf(0x01))
+                    alarm = true
+                } else {
+                    writeCharacteristic(gatt, it, byteArrayOf(0x00))
+                    alarm = false
+                }
+            }
+        }
+    }
+
     private suspend fun hasPermissions(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
             !RequestManager.checkPermissionGranted(context, Manifest.permission.BLUETOOTH_CONNECT)) {
@@ -61,12 +81,7 @@ class ConnectionService(private val context: Context) {
         } else return true
     }
 
-
-
-
-
-
-    fun writeCharacteristic(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic, payload: ByteArray) {
+    fun writeCharacteristic(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, payload: ByteArray) {
         val writeType = when {
             characteristic.isWritable() -> BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
             characteristic.isWritableWithoutResponse() -> {
@@ -75,11 +90,9 @@ class ConnectionService(private val context: Context) {
             else -> error("Characteristic ${characteristic.uuid} cannot be written to")
         }
 
-        gatt?.let { gatt ->
-            characteristic.writeType = writeType
-            characteristic.value = payload
-            gatt.writeCharacteristic(characteristic)
-        } ?: error("Not connected to a BLE device!")
+        characteristic.writeType = writeType
+        characteristic.value = payload
+        gatt.writeCharacteristic(characteristic)
     }
 }
 

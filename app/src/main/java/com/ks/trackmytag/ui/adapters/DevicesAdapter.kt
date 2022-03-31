@@ -13,16 +13,12 @@ import com.ks.trackmytag.databinding.ItemDeviceBinding
 class DevicesAdapter(private val deviceStates: DeviceStates, private val clickListener: DeviceClickListener) :
     ListAdapter<Device, DevicesAdapter.ViewHolder>(EntriesDiffCallback()) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder.from(parent)
-    }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder.from(parent)
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) =
         holder.bind(getItem(position), deviceStates, clickListener)
-    }
 
     class ViewHolder private constructor(val binding: ItemDeviceBinding) : RecyclerView.ViewHolder(binding.root) {
-
         fun bind(device: Device, deviceStates: DeviceStates, clickListener: DeviceClickListener) {
             binding.device = device
             binding.deviceStates = deviceStates
@@ -52,9 +48,11 @@ class EntriesDiffCallback : DiffUtil.ItemCallback<Device>() {
 
 class DeviceClickListener(
     val connectClickListener: (device: Device) -> Unit,
+    val alarmClickListener: (device: Device) -> Unit,
     val deleteClickListener: (device: Device) -> Unit
 ) {
     fun onConnectClick(device: Device) = connectClickListener(device)
+    fun onAlarmClick(device: Device) = alarmClickListener(device)
     fun onDeleteClick(device: Device) = deleteClickListener(device)
 }
 

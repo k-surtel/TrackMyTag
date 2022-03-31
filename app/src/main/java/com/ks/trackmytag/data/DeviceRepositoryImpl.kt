@@ -65,4 +65,8 @@ class DeviceRepositoryImpl @Inject constructor(
     override suspend fun disconnectDevice(device: Device) {
         bleManager.disconnectDevice(device)
     }
+
+    override fun deviceAlarm(device: Device) {
+        bleManager.deviceAlarm(device)
+    }
 }

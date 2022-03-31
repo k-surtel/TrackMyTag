@@ -141,4 +141,8 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
             repository.disconnectDevice(device)
         }
     }
+
+    fun deviceAlarm(device: Device) {
+        repository.deviceAlarm(device)
+    }
 }
