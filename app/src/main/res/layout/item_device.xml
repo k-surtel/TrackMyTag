@@ -23,73 +23,101 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginStart="@dimen/margin_large"
-        android:layout_marginEnd="@dimen/margin_large"
-        android:layout_marginTop="@dimen/margin_large">
+        android:layout_marginStart="@dimen/margin_medium"
+        android:layout_marginEnd="@dimen/margin_medium"
+        android:layout_marginTop="@dimen/margin_medium">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:padding="@dimen/margin_large">
+            android:layout_height="wrap_content"
+            android:padding="@dimen/margin_medium">
+
+            <TextView
+                android:id="@+id/connection_state"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                setStateText="@{deviceStates.connectionStates.get(device.address)}"
+                app:layout_constraintBottom_toBottomOf="@+id/connect_button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/connect_button"
+                tools:text="DISCONNECTED" />
+
+            <ImageButton
+                android:id="@+id/connect_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/connect"
+                android:src="@drawable/icon_link"
+                android:background="@drawable/round_corner_primary"
+                android:onClick="@{() -> clickListener.onConnectClick(device)}"
+                setVisibleWhenDisconnected="@{deviceStates.connectionStates.get(device.address)}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageButton
+                android:id="@+id/disconnect_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/disconnect"
+                android:src="@drawable/icon_disconnect"
+                android:background="@drawable/round_corner_dim"
+                android:onClick="@{() -> clickListener.onConnectClick(device)}"
+                setVisibleWhenConnected="@{deviceStates.connectionStates.get(device.address)}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@{device.name}"
-                tools:text="Device one"
                 android:textSize="@dimen/large_text"
+                app:layout_constraintTop_toBottomOf="@id/connection_state"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
+                android:layout_marginTop="@dimen/margin_small"
+                tools:text="Device one" />
 
             <TextView
                 android:id="@+id/battery_level"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="83"
-                android:text="@{deviceStates.batteryStates.get(device.address).toString()}"
+                setBatteryLevelText="@{deviceStates.batteryStates.get(device.address)}"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/name"/>
+                app:layout_constraintTop_toBottomOf="@id/name"
+                android:layout_marginTop="@dimen/margin_large"
+                tools:text="83" />
 
             <ImageButton
                 android:id="@+id/delete_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableStart="@drawable/icon_delete"
-                android:src="@drawable/icon_delete"
                 android:contentDescription="@string/delete_device"
+                android:drawableStart="@drawable/icon_delete"
                 android:onClick="@{() -> clickListener.onDeleteClick(device)}"
+                android:src="@drawable/icon_delete"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/connection_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                setButtonText="@{deviceStates.connectionStates.get(device.address)}"
-                setButtonColor="@{deviceStates.connectionStates.get(device.address)}"
-                android:onClick="@{() -> clickListener.onConnectClick(device)}"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/settings_button" />
-
-            <com.google.android.material.button.MaterialButton
+            <ImageButton
                 android:id="@+id/settings_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/settings"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/alarm_button" />
+                android:contentDescription="@string/settings"
+                android:drawableStart="@drawable/icon_settings"
+                android:src="@drawable/icon_settings"
+                android:layout_marginStart="@dimen/margin_small"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/delete_button"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/alarm_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/alarm"
                 android:onClick="@{() -> clickListener.onAlarmClick(device)}"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-
+                android:text="@string/alarm"
+                app:layout_constraintTop_toBottomOf="@id/battery_level"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

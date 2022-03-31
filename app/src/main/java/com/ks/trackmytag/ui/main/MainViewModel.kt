@@ -22,25 +22,24 @@ private const val TAG = "MainViewModel"
 @HiltViewModel
 class MainViewModel @Inject constructor(private val repository: DeviceRepository) : ViewModel() {
 
-    val savedDevices = repository.getSavedDevices()
+    // Permission & BT handling
+    val requestPermission = RequestManager.getRequestPermissionSharedFlow()
+    val requestBluetoothEnabled = RequestManager.getRequestBluetoothEnabledSharedFlow()
 
-    private val _connectionStates = mutableMapOf<String, State>()
-    private val _batteryLevels = mutableMapOf<String, Int>()
-    val deviceStates = DeviceStates(_connectionStates.toMap(), _batteryLevels.toMap())
-
+    // Scanning
     private val _scanDevices = mutableListOf<BluetoothDevice>()
-
     private val _showScanErrorMessage = MutableSharedFlow<Int>(0)
     val showScanErrorMessage = _showScanErrorMessage.asSharedFlow()
     private val _showScanDevices = MutableSharedFlow<Map<String, String>>()
     val showScanDevices = _showScanDevices.asSharedFlow()
+
+    // Saved devices
+    val savedDevices = repository.getSavedDevices()
+    private val _connectionResponseStateFlow = repository.getConnectionResponseStateFlow()
+    val deviceStates = DeviceStates(emptyMap(), emptyMap())
     private val _deviceChanged = MutableSharedFlow<Int>()
     val deviceChanged = _deviceChanged.asSharedFlow()
 
-    private val _connectionResponseStateFlow = repository.getConnectionResponseStateFlow()
-
-    val requestPermission = RequestManager.getRequestPermissionSharedFlow()
-    val requestBluetoothEnabled = RequestManager.getRequestBluetoothEnabledSharedFlow()
 
     init { setupConnectionStateObserver() }
 
@@ -48,15 +47,15 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
         viewModelScope.launch {
             _connectionResponseStateFlow.collectLatest { connectionResponse ->
                 connectionResponse.deviceAddress?.let {
-                    _connectionStates[it] = connectionResponse.newState
-                    _batteryLevels[it] = connectionResponse.batteryLevel
-
                     savedDevices.collectLatest { devicesList ->
                         val device = devicesList.find { it.address == connectionResponse.deviceAddress }
                         device?.let {
-                            _connectionStates[it.address] = connectionResponse.newState
-                            deviceStates.connectionStates = _connectionStates.toMap()
-                            deviceStates.batteryStates = _batteryLevels.toMap()
+                            deviceStates.connectionStates =
+                                deviceStates.connectionStates.plus(Pair(it.address, connectionResponse.newState))
+
+                            deviceStates.batteryStates =
+                                deviceStates.batteryStates.plus(Pair(it.address, connectionResponse.batteryLevel))
+
                             _deviceChanged.emit(devicesList.indexOf(it))
                         }
                     }
@@ -65,33 +64,16 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
         }
     }
 
-    fun handlePermissionsAndBluetooth(context: Context) {
-        if(!RequestManager.checkPermissionGranted(context, Manifest.permission.ACCESS_FINE_LOCATION))
-            viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.ACCESS_FINE_LOCATION) }
+    fun setupBle() = repository.setupBle()
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if(!RequestManager.checkPermissionGranted(context, Manifest.permission.BLUETOOTH_SCAN))
-                viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.BLUETOOTH_SCAN) }
-
-            if(!RequestManager.checkPermissionGranted(context, Manifest.permission.BLUETOOTH_CONNECT))
-                viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.BLUETOOTH_CONNECT) }
-        }
-
-        viewModelScope.launch { RequestManager.requestBluetoothEnabled() }
-    }
-
-    fun setupBle() { repository.setupBle() }
-
-    fun findDevices() {
-        viewModelScope.launch {
-            repository.findNewDevices().collectLatest {
-                processFoundDevices(it)
-            }
+    fun findDevices() = viewModelScope.launch {
+        repository.findNewDevices().collectLatest {
+            processFoundDevices(it)
         }
     }
 
     private suspend fun processFoundDevices(scanResults: ScanResults) {
-        if(scanResults.errorCode != 0) {
+        if (scanResults.errorCode != 0) {
             //0 - OK
             //1 - scan already started
             //2 - Fails to start scan as app cannot be registered.
@@ -118,31 +100,36 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
         _scanDevices.clear()
     }
 
-    fun deleteDevice(device: Device) {
-        viewModelScope.launch { repository.deleteDevice(device) }
-    }
+    fun deleteDevice(device: Device) = viewModelScope.launch { repository.deleteDevice(device) }
 
     fun onConnectionChangeClick(device: Device) {
         val connectionState = deviceStates.connectionStates[device.address]
 
-        if(connectionState == State.CONNECTED)
+        if (connectionState == State.CONNECTED)
             disconnectDevice(device)
         else connectWithDevice(device)
     }
 
-    fun connectWithDevice(device: Device) {
-        Log.d(TAG, "connectWithDevice: called")
+    private fun connectWithDevice(device: Device) =
         viewModelScope.launch { repository.connectWithDevice(device) }
-    }
 
-    fun disconnectDevice(device: Device) {
-        Log.d(TAG, "disconnectDevice: called!!!")
-        viewModelScope.launch {
-            repository.disconnectDevice(device)
+    private fun disconnectDevice(device: Device) =
+        viewModelScope.launch { repository.disconnectDevice(device) }
+
+    fun deviceAlarm(device: Device) = repository.deviceAlarm(device)
+
+    fun handlePermissionsAndBluetooth(context: Context) {
+        if (!RequestManager.checkPermissionGranted(context, Manifest.permission.ACCESS_FINE_LOCATION))
+            viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.ACCESS_FINE_LOCATION) }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!RequestManager.checkPermissionGranted(context, Manifest.permission.BLUETOOTH_SCAN))
+                viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.BLUETOOTH_SCAN) }
+
+            if (!RequestManager.checkPermissionGranted(context, Manifest.permission.BLUETOOTH_CONNECT))
+                viewModelScope.launch { RequestManager.requestPermission(Manifest.permission.BLUETOOTH_CONNECT) }
         }
-    }
 
-    fun deviceAlarm(device: Device) {
-        repository.deviceAlarm(device)
+        viewModelScope.launch { RequestManager.requestBluetoothEnabled() }
     }
 }

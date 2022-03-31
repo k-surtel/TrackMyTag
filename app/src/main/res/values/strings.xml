@@ -29,5 +29,10 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="alarm">Alarm</string>
+    <string name="connect">Connect</string>
+    <string name="battery_level">Battery level: %1$d%%</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="disconnect">Disconnect</string>
 
 </resources>

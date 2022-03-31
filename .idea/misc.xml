@@ -3,6 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/K/Desktop/TrackMyTag/app/src/main/res/drawable/icon_disconnect.xml" value="0.1265" />
+        <entry key="..\:/Users/K/Desktop/TrackMyTag/app/src/main/res/drawable/round_corner.xml" value="0.1265" />
+        <entry key="..\:/Users/K/Desktop/TrackMyTag/app/src/main/res/drawable/round_corner_dim.xml" value="0.1265" />
         <entry key="..\:/Users/K/Desktop/TrackMyTag/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/K/Desktop/TrackMyTag/app/src/main/res/layout/fragment_main.xml" value="0.365625" />
         <entry key="..\:/Users/K/Desktop/TrackMyTag/app/src/main/res/layout/item_device.xml" value="0.2" />
