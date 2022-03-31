@@ -2,9 +2,7 @@ package com.ks.trackmytag.bluetooth
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.util.Log
-import com.ks.trackmytag.bluetooth.connection.ALERT_LEVEL_CHARACTERISTIC
-import com.ks.trackmytag.bluetooth.connection.ConnectionResponse
+import com.ks.trackmytag.bluetooth.connection.ConnectionState
 import com.ks.trackmytag.bluetooth.connection.ConnectionService
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.bluetooth.scanning.ScanService
@@ -13,7 +11,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import java.util.*
 import javax.inject.Inject
 
 private const val TAG = "BleManager"
@@ -37,8 +34,8 @@ class BleManager @Inject constructor(@ApplicationContext context: Context) {
         return device
     }
 
-    fun getConnectionResponseStateFlow(): StateFlow<ConnectionResponse> =
-        connectionService.getConnectionResponseStateFlow()
+    fun getConnectionStateFlow(): StateFlow<ConnectionState> =
+        connectionService.getConnectionStateFlow()
 
     suspend fun connectWithDevice(device: Device, scanTime: Long) {
         var bluetoothDevice = device.bluetoothDevice

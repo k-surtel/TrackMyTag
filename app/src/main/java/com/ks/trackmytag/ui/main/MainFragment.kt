@@ -39,14 +39,9 @@ class MainFragment : Fragment() {
 
     private val viewModel: MainViewModel by viewModels()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
-        val binding: FragmentMainBinding = DataBindingUtil
-            .inflate(inflater, R.layout.fragment_main, container, false)
+        val binding: FragmentMainBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false)
         setHasOptionsMenu(true)
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
@@ -55,59 +50,30 @@ class MainFragment : Fragment() {
             registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
         val bluetoothResultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == Activity.RESULT_OK) {
-                    viewModel.setupBle()
-                }
+                if (result.resultCode == Activity.RESULT_OK) { viewModel.setupBle() }
             }
 
         val adapter = DevicesAdapter(viewModel.deviceStates, DeviceClickListener(
-            connectClickListener = {
-                viewModel.onConnectionChangeClick(it)
-            },
-            alarmClickListener = {
-                viewModel.deviceAlarm(it)
-            },
-            deleteClickListener = {
-                onDeleteDeviceClicked(it)
-            }
+            connectClickListener = { viewModel.onConnectionChangeClick(it) },
+            alarmClickListener = { viewModel.deviceAlarm(it) },
+            deleteClickListener = { onDeleteDeviceClicked(it) }
         ))
 
         binding.devices.adapter = adapter
 
         lifecycleScope.launch { viewModel.savedDevices.collectLatest { adapter.submitList(it) } }
 
-        lifecycleScope.launch {
-            viewModel.showScanErrorMessage.collectLatest {
-                showScanErrorMessage(
-                    it
-                )
-            }
-        }
+        lifecycleScope.launch { viewModel.showScanErrorMessage.collectLatest { showScanErrorMessage(it) } }
 
         lifecycleScope.launch { viewModel.showScanDevices.collectLatest { showFoundDevices(it) } }
 
         lifecycleScope.launch { viewModel.deviceChanged.collect { adapter.notifyItemChanged(it) } }
 
-        lifecycleScope.launch {
-            viewModel.requestPermission.collectLatest {
-                requestPermission(
-                    permissionResultLauncher,
-                    it
-                )
-            }
-        }
+        lifecycleScope.launch { viewModel.requestPermission.collectLatest { requestPermission(permissionResultLauncher, it) } }
 
-        lifecycleScope.launch {
-            viewModel.requestBluetoothEnabled.collectLatest {
-                requestBluetoothEnabled(
-                    bluetoothResultLauncher
-                )
-            }
-        }
+        lifecycleScope.launch { viewModel.requestBluetoothEnabled.collectLatest { requestBluetoothEnabled(bluetoothResultLauncher) } }
 
-        if (RequestManager.checkBleSupport(requireContext())) viewModel.handlePermissionsAndBluetooth(
-            requireContext()
-        )
+        if (RequestManager.checkBleSupport(requireContext())) viewModel.handlePermissionsAndBluetooth(requireContext())
 
         return binding.root
     }

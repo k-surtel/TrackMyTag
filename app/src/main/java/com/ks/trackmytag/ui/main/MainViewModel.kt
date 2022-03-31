@@ -4,7 +4,6 @@ import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import androidx.lifecycle.*
 import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
@@ -35,7 +34,7 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
 
     // Saved devices
     val savedDevices = repository.getSavedDevices()
-    private val _connectionResponseStateFlow = repository.getConnectionResponseStateFlow()
+    private val _connectionStateFlow = repository.getConnectionStateFlow()
     val deviceStates = DeviceStates(emptyMap(), emptyMap())
     private val _deviceChanged = MutableSharedFlow<Int>()
     val deviceChanged = _deviceChanged.asSharedFlow()
@@ -45,16 +44,16 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
 
     private fun setupConnectionStateObserver() {
         viewModelScope.launch {
-            _connectionResponseStateFlow.collectLatest { connectionResponse ->
-                connectionResponse.deviceAddress?.let {
+            _connectionStateFlow.collectLatest { connectionState ->
+                connectionState.deviceAddress?.let {
                     savedDevices.collectLatest { devicesList ->
-                        val device = devicesList.find { it.address == connectionResponse.deviceAddress }
+                        val device = devicesList.find { it.address == connectionState.deviceAddress }
                         device?.let {
                             deviceStates.connectionStates =
-                                deviceStates.connectionStates.plus(Pair(it.address, connectionResponse.newState))
+                                deviceStates.connectionStates.plus(Pair(it.address, connectionState.newState))
 
                             deviceStates.batteryStates =
-                                deviceStates.batteryStates.plus(Pair(it.address, connectionResponse.batteryLevel))
+                                deviceStates.batteryStates.plus(Pair(it.address, connectionState.batteryLevel))
 
                             _deviceChanged.emit(devicesList.indexOf(it))
                         }

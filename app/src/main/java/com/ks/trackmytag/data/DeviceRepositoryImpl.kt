@@ -1,9 +1,7 @@
 package com.ks.trackmytag.data
 
-import android.bluetooth.BluetoothDevice
-import android.util.Log
 import com.ks.trackmytag.bluetooth.BleManager
-import com.ks.trackmytag.bluetooth.connection.ConnectionResponse
+import com.ks.trackmytag.bluetooth.connection.ConnectionState
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.data.database.DevicesDao
 import com.ks.trackmytag.data.preferences.PreferencesManager
@@ -20,8 +18,8 @@ class DeviceRepositoryImpl @Inject constructor(
 
     override fun setupBle() { bleManager.setupBle() }
 
-    override fun getConnectionResponseStateFlow(): StateFlow<ConnectionResponse> {
-        return bleManager.getConnectionResponseStateFlow()
+    override fun getConnectionStateFlow(): StateFlow<ConnectionState> {
+        return bleManager.getConnectionStateFlow()
     }
 
     override fun getSavedDevices() = devicesDao.getSavedDevices()

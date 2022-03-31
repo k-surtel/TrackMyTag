@@ -5,12 +5,9 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import com.ks.trackmytag.bluetooth.RequestManager
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.*
@@ -21,9 +18,7 @@ class ConnectionService(private val context: Context) {
 
     private val gatts = mutableMapOf<String, BluetoothGatt>()
 
-    private var alarm = false
-
-    fun getConnectionResponseStateFlow(): StateFlow<ConnectionResponse> =
+    fun getConnectionStateFlow(): StateFlow<ConnectionState> =
         BluetoothGattCallback.connectionStateFlow.asStateFlow()
 
     @SuppressLint("MissingPermission")
@@ -56,13 +51,9 @@ class ConnectionService(private val context: Context) {
             val characteristic = service?.getCharacteristic(UUID.fromString(ALERT_LEVEL_CHARACTERISTIC))
 
             characteristic?.let {
-                if(!alarm) {
+                if(!BluetoothGattCallback.connectionStateFlow.value.alarm)
                     writeCharacteristic(gatt, it, byteArrayOf(0x01))
-                    alarm = true
-                } else {
-                    writeCharacteristic(gatt, it, byteArrayOf(0x00))
-                    alarm = false
-                }
+                 else writeCharacteristic(gatt, it, byteArrayOf(0x00))
             }
         }
     }

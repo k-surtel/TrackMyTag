@@ -11,7 +11,7 @@ private const val TAG = "BluetoothGattCallback"
 
 object BluetoothGattCallback : BluetoothGattCallback() {
 
-    var connectionStateFlow = MutableStateFlow(ConnectionResponse())
+    var connectionStateFlow = MutableStateFlow(ConnectionState())
 
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
         gatt?.let {
@@ -23,7 +23,7 @@ object BluetoothGattCallback : BluetoothGattCallback() {
                 }
                 else -> State.UNKNOWN
             }
-            connectionStateFlow.value = ConnectionResponse(gatt.device.address, state)
+            connectionStateFlow.value = ConnectionState(gatt.device.address, state)
         }
     }
 
@@ -33,13 +33,9 @@ object BluetoothGattCallback : BluetoothGattCallback() {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if(services.find { it.uuid.toString() == BATTERY_SERVICE } != null)
                     readBatteryLevel(gatt)
-                
-                
-                
-                
-                Log.d(TAG, "Discovered ${services.size} services for ${device.address}.")
 
-                Log.d(TAG, "SERVICES: ${services.size}")
+
+                Log.d(TAG, "Discovered ${services.size} services for ${device.address}.")
                 for(s in services) {
                     Log.d(TAG, "CHARACTERISTICS: ${s.characteristics.size}")
                     for(c in s.characteristics) {
@@ -50,9 +46,7 @@ object BluetoothGattCallback : BluetoothGattCallback() {
                     }
                 }
 
-            } else {
-                Log.e(TAG, "Service discovery failed due to status $status")
-            }
+            } else { Log.e(TAG, "Service discovery failed due to status $status") }
         }
     }
 
@@ -71,6 +65,14 @@ object BluetoothGattCallback : BluetoothGattCallback() {
             else -> {
                 Log.e("BluetoothGattCallback", "Characteristic read failed for ${characteristic.uuid}, error: $status")
             }
+        }
+    }
+
+    override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
+        if (status == BluetoothGatt.GATT_SUCCESS) {
+            connectionStateFlow.value = connectionStateFlow.value.copy(
+                alarm = !connectionStateFlow.value.alarm
+            )
         }
     }
 
