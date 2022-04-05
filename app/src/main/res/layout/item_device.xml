@@ -9,7 +9,7 @@
             type="com.ks.trackmytag.data.Device" />
         <variable
             name="deviceStates"
-            type="com.ks.trackmytag.ui.adapters.DeviceStates" />
+            type="com.ks.trackmytag.data.DeviceStates" />
         <variable
             name="clickListener"
             type="com.ks.trackmytag.ui.adapters.DeviceClickListener" />

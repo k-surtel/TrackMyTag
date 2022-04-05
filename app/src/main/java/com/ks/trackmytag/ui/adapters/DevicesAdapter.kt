@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ks.trackmytag.data.Device
+import com.ks.trackmytag.data.DeviceStates
 import com.ks.trackmytag.data.State
 import com.ks.trackmytag.databinding.ItemDeviceBinding
 
@@ -55,8 +56,3 @@ class DeviceClickListener(
     fun onAlarmClick(device: Device) = alarmClickListener(device)
     fun onDeleteClick(device: Device) = deleteClickListener(device)
 }
-
-class DeviceStates(
-    var connectionStates: Map<String, State>,
-    var batteryStates: Map<String, Int>
-    )

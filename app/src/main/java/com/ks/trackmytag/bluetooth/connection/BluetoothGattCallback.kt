@@ -71,7 +71,7 @@ object BluetoothGattCallback : BluetoothGattCallback() {
     override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             connectionStateFlow.value = connectionStateFlow.value.copy(
-                alarm = !connectionStateFlow.value.alarm
+                alarm = !connectionStateFlow.value.alarm!!
             )
         }
     }
@@ -131,26 +131,6 @@ object BluetoothGattCallback : BluetoothGattCallback() {
 
 
 
-
-
-
-
-
-fun BluetoothGattCharacteristic.printProperties(): String = mutableListOf<String>().apply {
-    if (isReadable()) add("READABLE")
-    if (isWritable()) add("WRITABLE")
-    if (isWritableWithoutResponse()) add("WRITABLE WITHOUT RESPONSE")
-    if (isIndicatable()) add("INDICATABLE")
-    if (isNotifiable()) add("NOTIFIABLE")
-    if (isEmpty()) add("EMPTY")
-}.joinToString()
-
-fun BluetoothGattDescriptor.printProperties(): String = mutableListOf<String>().apply {
-    if (isReadable()) add("READABLE")
-    if (isWritable()) add("WRITABLE")
-    if (isEmpty()) add("EMPTY")
-}.joinToString()
-
 fun BluetoothGattCharacteristic.isReadable(): Boolean =
     containsProperty(BluetoothGattCharacteristic.PROPERTY_READ)
 
@@ -177,7 +157,3 @@ fun BluetoothGattDescriptor.isWritable(): Boolean =
 
 fun BluetoothGattDescriptor.containsPermission(permission: Int): Boolean =
     permissions and permission != 0
-
-// ... somewhere outside BluetoothGattCallback
-fun ByteArray.toHexString(): String =
-    joinToString(separator = " ", prefix = "0x") { String.format("%02X", it) }

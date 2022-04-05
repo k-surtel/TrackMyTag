@@ -51,7 +51,7 @@ class ConnectionService(private val context: Context) {
             val characteristic = service?.getCharacteristic(UUID.fromString(ALERT_LEVEL_CHARACTERISTIC))
 
             characteristic?.let {
-                if(!BluetoothGattCallback.connectionStateFlow.value.alarm)
+                if()
                     writeCharacteristic(gatt, it, byteArrayOf(0x01))
                  else writeCharacteristic(gatt, it, byteArrayOf(0x00))
             }

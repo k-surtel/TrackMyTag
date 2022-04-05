@@ -9,6 +9,7 @@ import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.data.DeviceRepository
+import com.ks.trackmytag.data.DeviceStates
 import com.ks.trackmytag.data.State
 import com.ks.trackmytag.ui.adapters.DeviceStates
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,33 +35,57 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
 
     // Saved devices
     val savedDevices = repository.getSavedDevices()
+    val deviceStates = DeviceStates(mutableMapOf(), mutableMapOf())
     private val _connectionStateFlow = repository.getConnectionStateFlow()
-    val deviceStates = DeviceStates(emptyMap(), emptyMap())
     private val _deviceChanged = MutableSharedFlow<Int>()
     val deviceChanged = _deviceChanged.asSharedFlow()
 
 
-    init { setupConnectionStateObserver() }
+    init {
+        setupDeviceStates()
+        setupConnectionStateObserver()
+    }
+
+    private fun setupDeviceStates() = viewModelScope.launch {
+        savedDevices.collectLatest { devices ->
+            for (device in devices) {
+                deviceStates.connectionStates.put(device.address, State.DISCONNECTED)
+                deviceStates.batteryStates.put(device.address, -1)
+                deviceStates.alarm.put(device.address, false)
+            }
+        }
+    }
 
     private fun setupConnectionStateObserver() {
         viewModelScope.launch {
             _connectionStateFlow.collectLatest { connectionState ->
                 connectionState.deviceAddress?.let {
-                    savedDevices.collectLatest { devicesList ->
-                        val device = devicesList.find { it.address == connectionState.deviceAddress }
-                        device?.let {
-                            deviceStates.connectionStates =
-                                deviceStates.connectionStates.plus(Pair(it.address, connectionState.newState))
 
-                            deviceStates.batteryStates =
-                                deviceStates.batteryStates.plus(Pair(it.address, connectionState.batteryLevel))
+                    if(connectionState.newState != null)
+                        deviceStates.connectionStates[it] = connectionState.newState!!
 
-                            _deviceChanged.emit(devicesList.indexOf(it))
-                        }
-                    }
+                    if(connectionState.batteryLevel != null)
+                        deviceStates.batteryStates[it] = connectionState.batteryLevel!!
+
+                    if(connectionState.alarm != null)
+                        deviceStates.alarm[it] = connectionState.alarm!!
+
+                    findSavedDeviceIndex(it)?.let { it1 -> _deviceChanged.emit(it1) }
                 }
             }
         }
+    }
+
+    private fun findSavedDeviceIndex(address: String): Int? {
+        var index: Int? = null
+        viewModelScope.launch {
+            savedDevices.collectLatest {
+                val device = it.find { it.address == address }
+                index = it.indexOf(device)
+            }
+        }
+
+        return index
     }
 
     fun setupBle() = repository.setupBle()
