@@ -12,11 +12,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.*
 
-private const val TAG = "ConnectionService"
+private const val TAG = "TRACKTAGConnectionService"
 
 class ConnectionService(private val context: Context) {
 
     private val gatts = mutableMapOf<String, BluetoothGatt>()
+    private val alarms = mutableMapOf<String, Boolean>()
 
     fun getConnectionStateFlow(): StateFlow<ConnectionState> =
         BluetoothGattCallback.connectionStateFlow.asStateFlow()
@@ -39,8 +40,8 @@ class ConnectionService(private val context: Context) {
         val gatt = gatts[device.address]
         if(hasPermissions()) {
             gatt?.disconnect()
-            gatt?.close()
-            gatts.remove(device.address)
+            //gatt?.close()
+            //gatts.remove(device.address)
         }
     }
 
@@ -51,9 +52,15 @@ class ConnectionService(private val context: Context) {
             val characteristic = service?.getCharacteristic(UUID.fromString(ALERT_LEVEL_CHARACTERISTIC))
 
             characteristic?.let {
-                if()
+                if (alarms[address] == null) alarms[address] = false
+
+                if(alarms[address]!!) {
+                    alarms[address] = false
+                    writeCharacteristic(gatt, it, byteArrayOf(0x00))
+                } else {
+                    alarms[address] = true
                     writeCharacteristic(gatt, it, byteArrayOf(0x01))
-                 else writeCharacteristic(gatt, it, byteArrayOf(0x00))
+                }
             }
         }
     }

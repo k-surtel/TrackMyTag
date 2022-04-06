@@ -2,6 +2,9 @@ package com.ks.trackmytag.bluetooth.scanning
 
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
+import android.util.Log
+
+private const val TAG = "TRACKTAGScanCallback"
 
 object ScanCallback : ScanCallback() {
 

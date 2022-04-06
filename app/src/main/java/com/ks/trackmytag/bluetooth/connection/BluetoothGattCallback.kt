@@ -7,7 +7,7 @@ import com.ks.trackmytag.data.State
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.*
 
-private const val TAG = "BluetoothGattCallback"
+private const val TAG = "TRACKTAGBluetoothGattCallback"
 
 object BluetoothGattCallback : BluetoothGattCallback() {
 
@@ -23,7 +23,11 @@ object BluetoothGattCallback : BluetoothGattCallback() {
                 }
                 else -> State.UNKNOWN
             }
-            connectionStateFlow.value = ConnectionState(gatt.device.address, state)
+
+            connectionStateFlow.value = ConnectionState(
+                address = gatt.device.address,
+                state = state
+            )
         }
     }
 
@@ -53,11 +57,10 @@ object BluetoothGattCallback : BluetoothGattCallback() {
     override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
         when (status) {
             BluetoothGatt.GATT_SUCCESS -> {
-                if (characteristic.uuid.toString() == BATTERY_LEVEL_CHARACTERISTIC) {
-                    connectionStateFlow.value = connectionStateFlow.value.copy(
-                        batteryLevel = characteristic.value.first().toInt()
-                    )
-                }
+                connectionStateFlow.value = ConnectionState(
+                    address = gatt.device.address,
+                    battery = characteristic.value.first().toInt()
+                )
             }
             BluetoothGatt.GATT_READ_NOT_PERMITTED -> {
                 Log.e("BluetoothGattCallback", "Read not permitted for ${characteristic.uuid}!")
@@ -70,9 +73,7 @@ object BluetoothGattCallback : BluetoothGattCallback() {
 
     override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
         if (status == BluetoothGatt.GATT_SUCCESS) {
-            connectionStateFlow.value = connectionStateFlow.value.copy(
-                alarm = !connectionStateFlow.value.alarm!!
-            )
+            Log.d(TAG, "onCharacteristicWrite: CALLED")
         }
     }
 

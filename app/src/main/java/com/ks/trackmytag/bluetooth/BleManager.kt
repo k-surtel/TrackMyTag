@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import javax.inject.Inject
 
-private const val TAG = "BleManager"
+private const val TAG = "TRACKTAGBleManager"
 
 class BleManager @Inject constructor(@ApplicationContext context: Context) {
 

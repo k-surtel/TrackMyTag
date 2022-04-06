@@ -32,7 +32,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-private const val TAG = "MainFragment"
+private const val TAG = "TRACKTAGMainFragment"
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {

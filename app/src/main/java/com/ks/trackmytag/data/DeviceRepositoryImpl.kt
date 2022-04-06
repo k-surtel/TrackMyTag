@@ -8,7 +8,7 @@ import com.ks.trackmytag.data.preferences.PreferencesManager
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
-private const val TAG = "DeviceRepositoryImpl"
+private const val TAG = "TRACKTAGDeviceRepositoryImpl"
 
 class DeviceRepositoryImpl @Inject constructor(
     private val bleManager: BleManager,

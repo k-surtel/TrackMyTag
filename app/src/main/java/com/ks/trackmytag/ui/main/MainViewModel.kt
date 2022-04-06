@@ -4,6 +4,7 @@ import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.lifecycle.*
 import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
@@ -11,13 +12,12 @@ import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.data.DeviceRepository
 import com.ks.trackmytag.data.DeviceStates
 import com.ks.trackmytag.data.State
-import com.ks.trackmytag.ui.adapters.DeviceStates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private const val TAG = "MainViewModel"
+private const val TAG = "TRACKTAGMainViewModel"
 
 @HiltViewModel
 class MainViewModel @Inject constructor(private val repository: DeviceRepository) : ViewModel() {
@@ -35,56 +35,52 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
 
     // Saved devices
     val savedDevices = repository.getSavedDevices()
-    val deviceStates = DeviceStates(mutableMapOf(), mutableMapOf())
+    val deviceStates = DeviceStates(mutableMapOf(), mutableMapOf(), mutableMapOf())
     private val _connectionStateFlow = repository.getConnectionStateFlow()
     private val _deviceChanged = MutableSharedFlow<Int>()
     val deviceChanged = _deviceChanged.asSharedFlow()
 
 
     init {
-        setupDeviceStates()
         setupConnectionStateObserver()
     }
 
-    private fun setupDeviceStates() = viewModelScope.launch {
-        savedDevices.collectLatest { devices ->
-            for (device in devices) {
-                deviceStates.connectionStates.put(device.address, State.DISCONNECTED)
-                deviceStates.batteryStates.put(device.address, -1)
-                deviceStates.alarm.put(device.address, false)
+    private fun setupConnectionStateObserver() = viewModelScope.launch {
+        _connectionStateFlow.collectLatest { connectionState ->
+            connectionState.state?.let {
+                deviceStates.connectionStates[connectionState.address!!] = it
             }
+
+            connectionState.battery?.let {
+                deviceStates.batteryStates[connectionState.address!!] = it
+            }
+
+            connectionState.alarm?.let {
+                deviceStates.alarm[connectionState.address!!] = it
+            }
+
+            _deviceChanged.emit(0) //TODO
+
+
+//                    findSavedDeviceIndex(it)?.let { deviceIndex -> _deviceChanged.emit(deviceIndex) }
+
+//            savedDevices.collectLatest { deviceList ->
+//                val device = deviceList.find { it.address == connectionState.address }
+//                Log.d(TAG, "index: ${deviceList.indexOf(device)}")
+//                _deviceChanged.emit(deviceList.indexOf(device))
+//            }
         }
     }
 
-    private fun setupConnectionStateObserver() {
-        viewModelScope.launch {
-            _connectionStateFlow.collectLatest { connectionState ->
-                connectionState.deviceAddress?.let {
-
-                    if(connectionState.newState != null)
-                        deviceStates.connectionStates[it] = connectionState.newState!!
-
-                    if(connectionState.batteryLevel != null)
-                        deviceStates.batteryStates[it] = connectionState.batteryLevel!!
-
-                    if(connectionState.alarm != null)
-                        deviceStates.alarm[it] = connectionState.alarm!!
-
-                    findSavedDeviceIndex(it)?.let { it1 -> _deviceChanged.emit(it1) }
-                }
-            }
-        }
-    }
-
-    private fun findSavedDeviceIndex(address: String): Int? {
+    private suspend fun findSavedDeviceIndex(address: String): Int? {
         var index: Int? = null
-        viewModelScope.launch {
-            savedDevices.collectLatest {
-                val device = it.find { it.address == address }
-                index = it.indexOf(device)
-            }
+
+        savedDevices.collectLatest { deviceList ->
+            val device = deviceList.find { it.address == address }
+            index = deviceList.indexOf(device)
         }
 
+        Log.d(TAG, "findSavedDeviceIndex: device index = $index")
         return index
     }
 

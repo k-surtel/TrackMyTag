@@ -5,15 +5,17 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
-import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import com.ks.trackmytag.R
 import com.ks.trackmytag.bluetooth.RequestManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
+
+private const val TAG = "TRACKTAGScanService"
 
 class ScanService(private val context: Context) {
 
@@ -26,15 +28,13 @@ class ScanService(private val context: Context) {
     fun setupBle() {
         bluetoothScanner = bluetoothManager.adapter.bluetoothLeScanner
         settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_POWER).build()
-
-        //val filter = ScanFilter.Builder().setDeviceAddress("dsd").build()
     }
 
     @SuppressLint("MissingPermission")
     suspend fun scan(scanTime: Long) = flow {
         if(!isScanActive) {
+            isScanActive = true
             if(hasPermissions()) {
-                isScanActive = true
                 Toast.makeText(context, R.string.scanning_started, Toast.LENGTH_SHORT).show()
                 ScanCallback.scanResults = ScanResults()
 
@@ -44,17 +44,17 @@ class ScanService(private val context: Context) {
 
                 emit(ScanCallback.scanResults)
 
-                isScanActive = false
                 Toast.makeText(context, R.string.scanning_finished, Toast.LENGTH_SHORT).show()
             }
+            isScanActive = false
         }
     }
 
     @SuppressLint("MissingPermission")
-    suspend fun searchForDevice(address: String, scanTime: Long) = flow<BluetoothDevice?> {
+    suspend fun searchForDevice(address: String, scanTime: Long) = flow {
         if(!isScanActive) {
+            isScanActive = true
             if(hasPermissions()) {
-                isScanActive = true
                 Toast.makeText(context, R.string.scanning_started, Toast.LENGTH_SHORT).show()
                 ScanCallback.scanResults = ScanResults()
 
@@ -65,21 +65,21 @@ class ScanService(private val context: Context) {
                 val device = ScanCallback.scanResults.devices.find { it.address == address }
                 emit(device)
 
-                isScanActive = false
                 Toast.makeText(context, R.string.scanning_finished, Toast.LENGTH_SHORT).show()
             }
+            isScanActive = false
         }
     }
 
     private suspend fun hasPermissions(): Boolean {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
             !RequestManager.checkPermissionGranted(context, Manifest.permission.BLUETOOTH_SCAN)) {
             RequestManager.requestPermission(Manifest.permission.BLUETOOTH_SCAN)
             return false
-        } else if(!RequestManager.checkPermissionGranted(context, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+        } else if (!RequestManager.checkPermissionGranted(context, Manifest.permission.ACCESS_COARSE_LOCATION)) {
             RequestManager.requestPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
             return false
-        } else if(!RequestManager.isBluetoothEnabled(context)) {
+        } else if (!RequestManager.isBluetoothEnabled(context)) {
             RequestManager.requestBluetoothEnabled()
             return false
         } else return true
