@@ -14,8 +14,9 @@ object BluetoothGattCallback : BluetoothGattCallback() {
     var connectionStateFlow = MutableStateFlow(ConnectionState())
 
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-        gatt?.let {
-            val state = when(newState) {
+        if (gatt == null) return
+        if (status == BluetoothGatt.GATT_SUCCESS) {
+            val state = when (newState) {
                 BluetoothProfile.STATE_DISCONNECTED -> State.DISCONNECTED
                 BluetoothProfile.STATE_CONNECTED -> {
                     gatt.discoverServices()
@@ -28,20 +29,15 @@ object BluetoothGattCallback : BluetoothGattCallback() {
                 address = gatt.device.address,
                 state = state
             )
-        }
+        } else Log.e(TAG, "Connection state change failed due to status $status")
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         if (gatt == null) return
         if (status == BluetoothGatt.GATT_SUCCESS) {
             readBatteryLevel(gatt)
-
-            val serviceUuid = UUID.fromString(BUTTON_SERVICE)
-            val charUuid = UUID.fromString(BUTTON_CHARACTERISTIC)
-            val char = gatt.getService(serviceUuid)?.getCharacteristic(charUuid)
-            char?.let { enableNotifications(gatt, it) }
-        }
-        else { Log.e(TAG, "Service discovery failed due to status $status") }
+            enableButtonPressedNotification(gatt)
+        } else Log.e(TAG, "Service discovery failed due to status $status")
     }
 
     override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
@@ -55,18 +51,12 @@ object BluetoothGattCallback : BluetoothGattCallback() {
                         battery = characteristic.value.first().toInt()
                     )
                 }
+            }
 
-                if(characteristic.uuid == UUID.fromString(BUTTON_CHARACTERISTIC)) {
-                    Log.d(TAG, "UNKNOWN CHAR")
-                    Log.d(TAG, "UNKNOWN CHAR: ${characteristic.value}")
-                }
-            }
-            BluetoothGatt.GATT_READ_NOT_PERMITTED -> {
+            BluetoothGatt.GATT_READ_NOT_PERMITTED ->
                 Log.e("BluetoothGattCallback", "Read not permitted for ${characteristic.uuid}!")
-            }
-            else -> {
+            else ->
                 Log.e("BluetoothGattCallback", "Characteristic read failed for ${characteristic.uuid}, error: $status")
-            }
         }
     }
 
@@ -95,6 +85,13 @@ object BluetoothGattCallback : BluetoothGattCallback() {
         batteryLevelChar?.let { enableNotifications(gatt, it) }
     }
 
+    private fun enableButtonPressedNotification(gatt: BluetoothGatt) {
+        val serviceUuid = UUID.fromString(BUTTON_SERVICE)
+        val charUuid = UUID.fromString(BUTTON_CHARACTERISTIC)
+        val char = gatt.getService(serviceUuid)?.getCharacteristic(charUuid)
+        char?.let { enableNotifications(gatt, it) }
+    }
+
     private fun enableNotifications(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
         val payload = when {
             characteristic.isIndicatable() -> BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
@@ -105,11 +102,8 @@ object BluetoothGattCallback : BluetoothGattCallback() {
             }
         }
 
-        if (gatt.setCharacteristicNotification(characteristic, true)) {
-            Log.d(TAG, "enableNotifications SUCCESS")
-        } else {
-            Log.e("ConnectionManager", "setCharacteristicNotification failed for ${characteristic.uuid}")
-        }
+        if (gatt.setCharacteristicNotification(characteristic, true)) Log.d(TAG, "enableNotifications SUCCESS")
+         else Log.e("ConnectionManager", "setCharacteristicNotification failed for ${characteristic.uuid}")
     }
 
     private fun disableNotifications(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
@@ -118,15 +112,10 @@ object BluetoothGattCallback : BluetoothGattCallback() {
             return
         }
 
-        if (gatt.setCharacteristicNotification(characteristic, false)) {
-            Log.d(TAG, "Notifications DISABLED")
-        } else {
-            Log.e("ConnectionManager", "setCharacteristicNotification failed for ${characteristic.uuid}")
-        }
+        if (gatt.setCharacteristicNotification(characteristic, false)) Log.d(TAG, "Notifications DISABLED")
+         else Log.e("ConnectionManager", "setCharacteristicNotification failed for ${characteristic.uuid}")
     }
 }
-
-
 
 fun BluetoothGattCharacteristic.isReadable(): Boolean =
     containsProperty(BluetoothGattCharacteristic.PROPERTY_READ)
