@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
 import android.os.Build
 import com.ks.trackmytag.bluetooth.RequestManager
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.*
@@ -18,6 +19,7 @@ class ConnectionService(private val context: Context) {
 
     private val gatts = mutableMapOf<String, BluetoothGatt>()
     private val alarms = mutableMapOf<String, Boolean>()
+    private val coroutines = mutableMapOf<String, Job>()
 
     fun getConnectionStateFlow(): StateFlow<ConnectionState> =
         BluetoothGattCallback.connectionStateFlow.asStateFlow()
@@ -32,6 +34,10 @@ class ConnectionService(private val context: Context) {
                 gatt = device.connectGatt(context, false, BluetoothGattCallback)
                 gatts[device.address] = gatt
             }
+
+            gatt?.let {
+                coroutines.put(device.address, setConnectionSignalChecking(it))
+            }
         }
     }
 
@@ -42,6 +48,9 @@ class ConnectionService(private val context: Context) {
             gatt?.disconnect()
             //gatt?.close()
             //gatts.remove(device.address)
+
+            coroutines[device.address]?.cancelAndJoin()
+            coroutines.remove(device.address)
         }
     }
 
@@ -62,6 +71,15 @@ class ConnectionService(private val context: Context) {
                     writeCharacteristic(gatt, it, byteArrayOf(0x01))
                 }
             }
+        }
+    }
+
+    private suspend fun setConnectionSignalChecking(gatt: BluetoothGatt): Job = GlobalScope.launch {
+        while (true) {
+            // TODO check if still connected (w/ bt manager)
+
+            gatt.readRemoteRssi()
+            delay(10000)
         }
     }
 

@@ -35,7 +35,7 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
 
     // Saved devices
     val savedDevices = repository.getSavedDevices()
-    val deviceStates = DeviceStates(mutableMapOf(), mutableMapOf(), mutableMapOf())
+    val deviceStates = DeviceStates(mutableMapOf(), mutableMapOf(), mutableMapOf(), mutableMapOf())
     private val _connectionStateFlow = repository.getConnectionStateFlow()
     private val _deviceChanged = MutableSharedFlow<Int>()
     val deviceChanged = _deviceChanged.asSharedFlow()
@@ -47,6 +47,11 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
         _connectionStateFlow.collectLatest { connectionState ->
             connectionState.state?.let {
                 deviceStates.connectionStates[connectionState.address!!] = it
+            }
+
+            connectionState.signalStrength?.let {
+                Log.d(TAG, "signal strenght = $it")
+                deviceStates.signalStrength[connectionState.address!!] = it
             }
 
             connectionState.battery?.let {

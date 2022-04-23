@@ -6,6 +6,7 @@ import android.util.Log
 import com.ks.trackmytag.data.State
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.*
+import kotlin.math.abs
 
 private const val TAG = "TRACKTAGBluetoothGattCallback"
 
@@ -37,6 +38,7 @@ object BluetoothGattCallback : BluetoothGattCallback() {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             readBatteryLevel(gatt)
             enableButtonPressedNotification(gatt)
+            gatt.readRemoteRssi()
         } else Log.e(TAG, "Service discovery failed due to status $status")
     }
 
@@ -73,6 +75,17 @@ object BluetoothGattCallback : BluetoothGattCallback() {
         Log.d(TAG, "onCharacteristicChanged: CALLED")
         Log.d(TAG, "char: ${characteristic?.uuid}")
         Log.d(TAG, "char value: ${characteristic?.value}")
+    }
+
+    override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
+        if (status == BluetoothGatt.GATT_SUCCESS) {
+            Log.d(TAG, "onReadRemoteRssi: $rssi")
+
+            connectionStateFlow.value = ConnectionState(
+                address = gatt?.device?.address,
+                signalStrength = abs(rssi)
+            )
+        }
     }
 
     private fun readBatteryLevel(gatt: BluetoothGatt) {

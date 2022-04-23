@@ -85,7 +85,16 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/name"
                 android:layout_marginTop="@dimen/margin_large"
-                tools:text="83" />
+                tools:text="Battery level: 83%" />
+
+            <TextView
+                android:id="@+id/signal_strength"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                setSignalStrengthText="@{deviceStates.signalStrength.get(device.address)}"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/battery_level"
+                tools:text="Signal strength: 83" />
 
             <ImageButton
                 android:id="@+id/delete_button"
@@ -115,7 +124,7 @@
                 android:layout_height="wrap_content"
                 android:onClick="@{() -> clickListener.onAlarmClick(device)}"
                 android:text="@string/alarm"
-                app:layout_constraintTop_toBottomOf="@id/battery_level"
+                app:layout_constraintTop_toBottomOf="@id/signal_strength"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 

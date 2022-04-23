@@ -34,5 +34,6 @@
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>
     <string name="disconnect">Disconnect</string>
+    <string name="signal_strength">Signal strength: %1$d</string>
 
 </resources>

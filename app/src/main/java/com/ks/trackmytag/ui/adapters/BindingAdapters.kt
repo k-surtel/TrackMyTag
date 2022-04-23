@@ -6,6 +6,12 @@ import androidx.databinding.BindingAdapter
 import com.ks.trackmytag.R
 import com.ks.trackmytag.data.State
 
+@BindingAdapter("setSignalStrengthText")
+fun setSignalStrengthText(view: View, signalStrength: Int?) {
+    if(signalStrength == null) (view as TextView).text = view.resources.getString(R.string.signal_strength, -1)
+    else (view as TextView).text = view.resources.getString(R.string.signal_strength, signalStrength)
+}
+
 @BindingAdapter("setBatteryLevelText")
 fun setBatteryLevelText(view: View, batteryLevel: Int?) {
     if(batteryLevel == null) (view as TextView).text = view.resources.getString(R.string.battery_level, -1)
