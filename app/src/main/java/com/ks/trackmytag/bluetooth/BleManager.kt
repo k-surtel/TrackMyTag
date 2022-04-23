@@ -58,6 +58,6 @@ class BleManager @Inject constructor(@ApplicationContext context: Context) {
     }
 
     fun deviceAlarm(device: Device) {
-        connectionService.deviceAlarm(device.address)
+        connectionService.alarm(device.address)
     }
 }

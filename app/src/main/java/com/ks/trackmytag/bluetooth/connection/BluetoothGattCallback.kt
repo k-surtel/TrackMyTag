@@ -33,34 +33,33 @@ object BluetoothGattCallback : BluetoothGattCallback() {
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         if (gatt == null) return
-        with(gatt) {
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                if(services.find { it.uuid.toString() == BATTERY_SERVICE } != null)
-                    readBatteryLevel(gatt)
+        if (status == BluetoothGatt.GATT_SUCCESS) {
+            readBatteryLevel(gatt)
 
-
-                Log.d(TAG, "Discovered ${services.size} services for ${device.address}.")
-                for(s in services) {
-                    Log.d(TAG, "CHARACTERISTICS: ${s.characteristics.size}")
-                    for(c in s.characteristics) {
-                        Log.d(TAG, "DESCRIPTORS: ${c.descriptors.size}")
-                        for(d in c.descriptors) {
-                            Log.d(TAG, "Descriptor: ${d.uuid}")
-                        }
-                    }
-                }
-
-            } else { Log.e(TAG, "Service discovery failed due to status $status") }
+            val serviceUuid = UUID.fromString(BUTTON_SERVICE)
+            val charUuid = UUID.fromString(BUTTON_CHARACTERISTIC)
+            val char = gatt.getService(serviceUuid)?.getCharacteristic(charUuid)
+            char?.let { enableNotifications(gatt, it) }
         }
+        else { Log.e(TAG, "Service discovery failed due to status $status") }
     }
 
     override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
         when (status) {
             BluetoothGatt.GATT_SUCCESS -> {
-                connectionStateFlow.value = ConnectionState(
-                    address = gatt.device.address,
-                    battery = characteristic.value.first().toInt()
-                )
+                Log.d(TAG, "onCharacteristicRead: ${characteristic.uuid}")
+
+                if(characteristic.uuid == UUID.fromString(BATTERY_LEVEL_CHARACTERISTIC)) {
+                    connectionStateFlow.value = ConnectionState(
+                        address = gatt.device.address,
+                        battery = characteristic.value.first().toInt()
+                    )
+                }
+
+                if(characteristic.uuid == UUID.fromString(BUTTON_CHARACTERISTIC)) {
+                    Log.d(TAG, "UNKNOWN CHAR")
+                    Log.d(TAG, "UNKNOWN CHAR: ${characteristic.value}")
+                }
             }
             BluetoothGatt.GATT_READ_NOT_PERMITTED -> {
                 Log.e("BluetoothGattCallback", "Read not permitted for ${characteristic.uuid}!")
@@ -82,7 +81,8 @@ object BluetoothGattCallback : BluetoothGattCallback() {
         //we’ve enabled notifications or indications on a characteristic, any incoming notification or indication
         // is delivered via BluetoothGattCallback’s onCharacteristicChanged() callback
         Log.d(TAG, "onCharacteristicChanged: CALLED")
-
+        Log.d(TAG, "char: ${characteristic?.uuid}")
+        Log.d(TAG, "char value: ${characteristic?.value}")
     }
 
     private fun readBatteryLevel(gatt: BluetoothGatt) {
@@ -92,11 +92,10 @@ object BluetoothGattCallback : BluetoothGattCallback() {
         if (batteryLevelChar?.isReadable() == true) {
             gatt.readCharacteristic(batteryLevelChar)
         }
-
-        //batteryLevelChar?.let { enableNotifications(gatt, it) }
+        batteryLevelChar?.let { enableNotifications(gatt, it) }
     }
 
-    fun enableNotifications(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+    private fun enableNotifications(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
         val payload = when {
             characteristic.isIndicatable() -> BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
             characteristic.isNotifiable() -> BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
@@ -113,7 +112,7 @@ object BluetoothGattCallback : BluetoothGattCallback() {
         }
     }
 
-    fun disableNotifications(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+    private fun disableNotifications(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
         if (!characteristic.isNotifiable() && !characteristic.isIndicatable()) {
             Log.e("ConnectionManager", "${characteristic.uuid} doesn't support indications/notifications")
             return
@@ -126,9 +125,6 @@ object BluetoothGattCallback : BluetoothGattCallback() {
         }
     }
 }
-
-
-
 
 
 
@@ -149,12 +145,3 @@ fun BluetoothGattCharacteristic.isNotifiable(): Boolean =
 
 fun BluetoothGattCharacteristic.containsProperty(property: Int): Boolean =
     properties and property != 0
-
-fun BluetoothGattDescriptor.isReadable(): Boolean =
-    containsPermission(BluetoothGattDescriptor.PERMISSION_READ)
-
-fun BluetoothGattDescriptor.isWritable(): Boolean =
-    containsPermission(BluetoothGattDescriptor.PERMISSION_WRITE)
-
-fun BluetoothGattDescriptor.containsPermission(permission: Int): Boolean =
-    permissions and permission != 0

@@ -30,7 +30,7 @@ class ConnectionService(private val context: Context) {
             if(gatt != null) gatt.connect()
             else {
                 gatt = device.connectGatt(context, false, BluetoothGattCallback)
-                gatts.put(device.address, gatt)
+                gatts[device.address] = gatt
             }
         }
     }
@@ -45,7 +45,7 @@ class ConnectionService(private val context: Context) {
         }
     }
 
-    fun deviceAlarm(address: String) {
+    fun alarm(address: String) {
         val gatt = gatts[address]
         gatt?.let { gatt ->
             val service = gatt.getService(UUID.fromString(IMMEDIATE_ALERT_SERVICE))
@@ -79,7 +79,7 @@ class ConnectionService(private val context: Context) {
         } else return true
     }
 
-    fun writeCharacteristic(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, payload: ByteArray) {
+    private fun writeCharacteristic(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, payload: ByteArray) {
         val writeType = when {
             characteristic.isWritable() -> BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
             characteristic.isWritableWithoutResponse() -> {
