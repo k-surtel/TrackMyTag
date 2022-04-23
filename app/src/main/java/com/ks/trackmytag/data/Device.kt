@@ -7,13 +7,11 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "devices")
 data class Device(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int? = null,
+    @PrimaryKey(autoGenerate = true) val id: Int? = null,
     var name: String,
     val address: String
 ) {
-    @Ignore
-    var bluetoothDevice: BluetoothDevice? = null
+    @Ignore var bluetoothDevice: BluetoothDevice? = null
 }
 
 enum class State {

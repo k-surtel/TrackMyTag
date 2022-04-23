@@ -41,9 +41,7 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     val deviceChanged = _deviceChanged.asSharedFlow()
 
 
-    init {
-        setupConnectionStateObserver()
-    }
+    init { setupConnectionStateObserver() }
 
     private fun setupConnectionStateObserver() = viewModelScope.launch {
         _connectionStateFlow.collectLatest { connectionState ->
@@ -59,29 +57,13 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
                 deviceStates.alarm[connectionState.address!!] = it
             }
 
-            _deviceChanged.emit(0) //TODO
-
-
-//                    findSavedDeviceIndex(it)?.let { deviceIndex -> _deviceChanged.emit(deviceIndex) }
-
-//            savedDevices.collectLatest { deviceList ->
-//                val device = deviceList.find { it.address == connectionState.address }
-//                Log.d(TAG, "index: ${deviceList.indexOf(device)}")
-//                _deviceChanged.emit(deviceList.indexOf(device))
-//            }
+            connectionState.address?.let {
+                repository.getSavedDevicesAddresses().collectLatest { addresses ->
+                    val changedDeviceIndex = addresses.indexOf(it)
+                    if (changedDeviceIndex != -1) _deviceChanged.emit(changedDeviceIndex)
+                }
+            }
         }
-    }
-
-    private suspend fun findSavedDeviceIndex(address: String): Int? {
-        var index: Int? = null
-
-        savedDevices.collectLatest { deviceList ->
-            val device = deviceList.find { it.address == address }
-            index = deviceList.indexOf(device)
-        }
-
-        Log.d(TAG, "findSavedDeviceIndex: device index = $index")
-        return index
     }
 
     fun setupBle() = repository.setupBle()
