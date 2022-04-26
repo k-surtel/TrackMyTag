@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.databinding.ItemDeviceIconBinding
 
-class DeviceIconAdapter(val clickListener: DeviceIconClickListener)
+class DeviceIconAdapter(private val clickListener: DeviceIconClickListener)
     : ListAdapter<Device, DeviceIconAdapter.ViewHolder>(EntriesDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder.from(parent)
@@ -15,7 +15,7 @@ class DeviceIconAdapter(val clickListener: DeviceIconClickListener)
     override fun onBindViewHolder(holder: ViewHolder, position: Int) =
         holder.bind(getItem(position), clickListener)
 
-    class ViewHolder private constructor(val binding: ItemDeviceIconBinding) : RecyclerView.ViewHolder(binding.root) {
+    class ViewHolder private constructor(private val binding: ItemDeviceIconBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(device: Device, deviceIconClickListener: DeviceIconClickListener) {
             binding.device = device
             binding.clickListener = deviceIconClickListener

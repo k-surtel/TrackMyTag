@@ -75,7 +75,10 @@ class MainFragment : Fragment() {
 
         lifecycleScope.launch { viewModel.showScanDevices.collectLatest { showFoundDevices(it) } }
 
-        lifecycleScope.launch { viewModel.deviceChanged.collect { adapter.notifyItemChanged(it) } }
+        lifecycleScope.launch { viewModel.deviceChanged.collect {
+            adapter.notifyItemChanged(it)
+            iconsAdapter.notifyItemChanged(it)
+        } }
 
         lifecycleScope.launch { viewModel.requestPermission.collectLatest { requestPermission(permissionResultLauncher, it) } }
 

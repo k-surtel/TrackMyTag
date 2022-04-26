@@ -28,6 +28,8 @@
                 android:contentDescription="@{device.name}"
                 android:src="@drawable/icon_disconnect"
                 android:background="@drawable/device_icon"
+                setBackgroundColor="@{device.color}"
+                setIconAlpha="@{device.connectionState}"
                 android:onClick="@{() -> clickListener.onDeviceIconClick(device)}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -35,3 +37,5 @@
     </com.google.android.material.card.MaterialCardView>
 
 </layout>
+
+<!--    android:backgroundTint="@color/purple_500"-->

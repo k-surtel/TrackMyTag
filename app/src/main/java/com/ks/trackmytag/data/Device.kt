@@ -9,7 +9,8 @@ import androidx.room.PrimaryKey
 data class Device(
     @PrimaryKey(autoGenerate = true) val id: Int? = null,
     var name: String,
-    val address: String
+    val address: String,
+    var color: String
 ) {
     @Ignore var bluetoothDevice: BluetoothDevice? = null
     @Ignore var connectionState: State = State.DISCONNECTED

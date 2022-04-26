@@ -49,6 +49,17 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
         observeSharedFlow()
     }
 
+//    private fun mockDatabase() = viewModelScope.launch {
+//        repository.getSavedDevicesCount().collectLatest { devicesCount ->
+//            if (devicesCount < 3) {
+//                repository.saveDevice(Device(null, "Devvv", "addr", "#d61c60"))
+//                repository.saveDevice(Device(null, "Example", "addr", "#754a7d"))
+//                repository.saveDevice(Device(null, "Cobytu", "addr", "#283d28"))
+//                repository.saveDevice(Device(null, "Ehhhh", "addr", "#fcb103"))
+//            }
+//        }
+//    }
+
     private fun observeSharedFlow() = viewModelScope.launch {
         repository.getSharedFlow().collectLatest {
             Log.d(TAG, "observeSharedFlow: state = ${it.state}")
@@ -129,7 +140,7 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     }
 
     fun saveDevice(index: Int, name: String) = viewModelScope.launch {
-        val device = Device(null, name, _scanDevices[index].address)
+        val device = Device(null, name, _scanDevices[index].address, "#6e6e6e")
         device.bluetoothDevice = _scanDevices[index]
         repository.saveDevice(device)
         _scanDevices.clear()
