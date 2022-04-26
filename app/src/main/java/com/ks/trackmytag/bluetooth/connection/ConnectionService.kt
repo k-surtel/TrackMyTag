@@ -9,8 +9,7 @@ import android.content.Context
 import android.os.Build
 import com.ks.trackmytag.bluetooth.RequestManager
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import java.util.*
 
 private const val TAG = "TRACKTAGConnectionService"

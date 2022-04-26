@@ -4,7 +4,11 @@ import android.bluetooth.*
 import android.bluetooth.BluetoothGattCallback
 import android.util.Log
 import com.ks.trackmytag.data.State
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.math.abs
 
@@ -12,7 +16,12 @@ private const val TAG = "TRACKTAGBluetoothGattCallback"
 
 object BluetoothGattCallback : BluetoothGattCallback() {
 
+    val connectionStates = mutableListOf<ConnectionState>()
+
     var connectionStateFlow = MutableStateFlow(ConnectionState())
+
+    private val _sharedFlow = MutableSharedFlow<ConnectionState>()
+    val sharedFlow = _sharedFlow.asSharedFlow()
 
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
         if (gatt == null) return
@@ -26,10 +35,32 @@ object BluetoothGattCallback : BluetoothGattCallback() {
                 else -> State.UNKNOWN
             }
 
+            val connectionState2 = ConnectionState(
+                address = gatt.device.address,
+                state = state
+            )
+
             connectionStateFlow.value = ConnectionState(
                 address = gatt.device.address,
                 state = state
             )
+
+            GlobalScope.launch {
+                _sharedFlow.emit(connectionState2)
+            }
+
+            var connectionState = connectionStates.find { it.address == gatt.device.address }
+            if (connectionState == null) {
+                connectionState = ConnectionState(address = gatt.device.address, state = state)
+                connectionStates.add(connectionState)
+                Log.d(TAG, "onConnectionStateChange: new connectionstate added to list")
+            }
+            else {
+                connectionState.state = state
+                Log.d(TAG, "onConnectionStateChange: connectionstate updated")
+                Log.d(TAG, "onConnectionStateChange: new state in list: ${connectionStates[0].state}")
+            }
+
         } else Log.e(TAG, "Connection state change failed due to status $status")
     }
 

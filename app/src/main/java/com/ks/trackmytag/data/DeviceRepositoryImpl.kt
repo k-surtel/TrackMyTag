@@ -1,5 +1,6 @@
 package com.ks.trackmytag.data
 
+import android.util.Log
 import com.ks.trackmytag.bluetooth.BleManager
 import com.ks.trackmytag.bluetooth.connection.ConnectionState
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
@@ -22,10 +23,28 @@ class DeviceRepositoryImpl @Inject constructor(
         return bleManager.getConnectionStateFlow()
     }
 
-    override fun getSavedDevices() = devicesDao.getSavedDevices()
+    override fun getSavedDevices() = devicesDao.getSavedDevices().map {
+        mapSavedDevices(it)
+    }
+
+    private fun mapSavedDevices(deviceList: List<Device>): List<Device> {
+        Log.d(TAG, "mapSavedDevices: devices mapping, connectionState list size: ${bleManager.getConnectionStatesList().size}")
+        bleManager.getConnectionStatesList().forEach { connectionState ->
+            val device = deviceList.find { it.address == connectionState.address }
+            device?.let {
+                if(connectionState.state != null) it.connectionState = connectionState.state!!
+            }
+        }
+
+        return deviceList
+    }
 
     override fun getSavedDevicesAddresses(): Flow<List<String>> {
         return devicesDao.getSavedDevicesAddresses()
+    }
+
+    override fun getSavedDevicesCount(): Flow<Int> {
+        return devicesDao.getSavedDevicesCount()
     }
 
     private suspend fun getScanTime(): Long {
@@ -66,5 +85,9 @@ class DeviceRepositoryImpl @Inject constructor(
 
     override fun deviceAlarm(device: Device) {
         bleManager.deviceAlarm(device)
+    }
+
+    override fun getSharedFlow(): SharedFlow<ConnectionState> {
+        return bleManager.sharedFlow
     }
 }

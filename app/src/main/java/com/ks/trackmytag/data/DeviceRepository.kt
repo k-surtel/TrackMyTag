@@ -3,6 +3,7 @@ package com.ks.trackmytag.data
 import com.ks.trackmytag.bluetooth.connection.ConnectionState
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 interface DeviceRepository {
@@ -15,6 +16,8 @@ interface DeviceRepository {
 
     fun getSavedDevicesAddresses(): Flow<List<String>>
 
+    fun getSavedDevicesCount(): Flow<Int>
+
     suspend fun findNewDevices(): Flow<ScanResults>
 
     suspend fun saveDevice(device: Device)
@@ -26,4 +29,6 @@ interface DeviceRepository {
     suspend fun disconnectDevice(device: Device)
 
     fun deviceAlarm(device: Device)
+
+    fun getSharedFlow(): SharedFlow<ConnectionState>
 }

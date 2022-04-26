@@ -5,13 +5,11 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.databinding.DataBindingUtil
@@ -23,9 +21,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.ks.trackmytag.R
 import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.data.Device
-import com.ks.trackmytag.data.State
 import com.ks.trackmytag.databinding.FragmentMainBinding
 import com.ks.trackmytag.ui.adapters.DeviceClickListener
+import com.ks.trackmytag.ui.adapters.DeviceIconAdapter
+import com.ks.trackmytag.ui.adapters.DeviceIconClickListener
 import com.ks.trackmytag.ui.adapters.DevicesAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -53,6 +52,12 @@ class MainFragment : Fragment() {
                 if (result.resultCode == Activity.RESULT_OK) { viewModel.setupBle() }
             }
 
+        val iconsAdapter = DeviceIconAdapter(DeviceIconClickListener {
+            viewModel.chooseDevice(it)
+        })
+        binding.deviceList.adapter = iconsAdapter
+
+
         val adapter = DevicesAdapter(viewModel.deviceStates, DeviceClickListener(
             connectClickListener = { viewModel.onConnectionChangeClick(it) },
             alarmClickListener = { viewModel.deviceAlarm(it) },
@@ -61,7 +66,10 @@ class MainFragment : Fragment() {
 
         binding.devices.adapter = adapter
 
-        lifecycleScope.launch { viewModel.savedDevices.collectLatest { adapter.submitList(it) } }
+        lifecycleScope.launch { viewModel.savedDevices.collectLatest {
+            adapter.submitList(it)
+            iconsAdapter.submitList(it)
+        } }
 
         lifecycleScope.launch { viewModel.showScanErrorMessage.collectLatest { showScanErrorMessage(it) } }
 

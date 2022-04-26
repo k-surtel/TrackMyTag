@@ -12,6 +12,7 @@ data class Device(
     val address: String
 ) {
     @Ignore var bluetoothDevice: BluetoothDevice? = null
+    @Ignore var connectionState: State = State.DISCONNECTED
 }
 
 enum class State {

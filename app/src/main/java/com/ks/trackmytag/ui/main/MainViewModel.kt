@@ -40,8 +40,32 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     private val _deviceChanged = MutableSharedFlow<Int>()
     val deviceChanged = _deviceChanged.asSharedFlow()
 
+    private val _selectedDeviceStateFlow = MutableStateFlow<Device?>(null)
+    val selectedDeviceStateFlow = _selectedDeviceStateFlow.asStateFlow()
 
-    init { setupConnectionStateObserver() }
+
+    init {
+        setupConnectionStateObserver()
+        observeSharedFlow()
+    }
+
+    private fun observeSharedFlow() = viewModelScope.launch {
+        repository.getSharedFlow().collectLatest {
+            Log.d(TAG, "observeSharedFlow: state = ${it.state}")
+            Log.d(TAG, "observeSharedFlow: signal = ${it.signalStrength}")
+            Log.d(TAG, "observeSharedFlow: alarm = ${it.alarm}")
+            Log.d(TAG, "observeSharedFlow: battery = ${it.battery}")
+
+            
+            it.state?.let { state ->
+                if (it.address == selectedDeviceStateFlow.value?.address) {
+                    val deviceState = selectedDeviceStateFlow.value
+                    deviceState!!.connectionState = state
+                    _selectedDeviceStateFlow.value = deviceState
+                }
+            }
+        }
+    }
 
     private fun setupConnectionStateObserver() = viewModelScope.launch {
         _connectionStateFlow.collectLatest { connectionState ->
@@ -69,6 +93,10 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
                 }
             }
         }
+    }
+
+    fun chooseDevice(device: Device) {
+        _selectedDeviceStateFlow.value = device
     }
 
     fun setupBle() = repository.setupBle()
