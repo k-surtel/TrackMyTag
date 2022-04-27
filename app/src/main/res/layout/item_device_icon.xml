@@ -16,23 +16,24 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/margin_small"
-        app:layout_constraintStart_toStartOf="parent"
+        app:cardElevation="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-            <ImageButton
-                android:id="@+id/device_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@{device.name}"
-                android:src="@drawable/icon_disconnect"
-                android:background="@drawable/device_icon"
-                setBackgroundColor="@{device.color}"
-                setIconAlpha="@{device.connectionState}"
-                android:onClick="@{() -> clickListener.onDeviceIconClick(device)}"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+        <ImageButton
+            android:id="@+id/device_icon"
+            setBackgroundColor="@{device.color}"
+            setIconAlpha="@{device.connectionState}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/device_icon"
+            android:contentDescription="@{device.name}"
+            android:onClick="@{() -> clickListener.onDeviceIconClick(device)}"
+            android:src="@drawable/icon_disconnect"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </com.google.android.material.card.MaterialCardView>
 

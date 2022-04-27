@@ -24,6 +24,7 @@ class DeviceRepositoryImpl @Inject constructor(
     }
 
     override fun getSavedDevices() = devicesDao.getSavedDevices().map {
+        Log.d(TAG, "GETTING DEVICES FROM DATABASE")
         mapSavedDevices(it)
     }
 
