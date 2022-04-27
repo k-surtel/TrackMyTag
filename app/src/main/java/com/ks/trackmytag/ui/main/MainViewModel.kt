@@ -4,6 +4,7 @@ import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.lifecycle.*
 import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
@@ -13,6 +14,7 @@ import com.ks.trackmytag.data.DeviceStates
 import com.ks.trackmytag.data.State
 import com.ks.trackmytag.ui.adapters.DeviceIconAdapter
 import com.ks.trackmytag.ui.adapters.DeviceIconClickListener
+import com.ks.trackmytag.utils.forceUpdate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -44,7 +46,7 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     val selectedDeviceStateFlow = _selectedDeviceStateFlow.asStateFlow()
 
     val iconsAdapter = DeviceIconAdapter(DeviceIconClickListener {
-        chooseDevice(it)
+        _selectedDeviceStateFlow.value = it
     })
 
     init { observeDeviceStates() }
@@ -60,25 +62,25 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
                     }
 
                     deviceState.signalStrength?.let {
-                        // TODO
+                        device.signalStrength = it
                     }
 
                     deviceState.batteryLevel?.let {
-                        //TODO
+                        device.batteryLevel = it
                     }
 
                     deviceState.alarm?.let {
                         //TODO
                     }
 
+                    if(_selectedDeviceStateFlow.value?.address == deviceState.address) {
+                        _selectedDeviceStateFlow.forceUpdate(device)
+                    }
+
                     iconsAdapter.notifyItemChanged(iconsAdapter.currentList.indexOf(device))
                 }
             }
         }
-    }
-
-    fun chooseDevice(device: Device) {
-        _selectedDeviceStateFlow.value = device
     }
 
     fun setupBle() = repository.setupBle()

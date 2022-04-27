@@ -49,12 +49,22 @@
                     app:layout_constraintTop_toTopOf="parent"/>
 
                 <TextView
-                    android:id="@+id/device_connection"
-                    android:text="@{viewModel.selectedDeviceStateFlow.connectionState.toString()}"
+                    android:id="@+id/battery_level"
+                    setBatteryLevelText="@{viewModel.selectedDeviceStateFlow.batteryLevel}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/device_name"/>
+
+                <TextView
+                    android:id="@+id/signal_strength"
+                    android:text="@{String.valueOf(viewModel.selectedDeviceStateFlow.signalStrength)}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/battery_level"/>
+
+
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
