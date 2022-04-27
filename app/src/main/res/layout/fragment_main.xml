@@ -32,6 +32,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/margin_medium"
+            app:cardElevation="0dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/device_list">
@@ -58,27 +59,40 @@
 
                 <TextView
                     android:id="@+id/signal_strength"
-                    android:text="@{String.valueOf(viewModel.selectedDeviceStateFlow.signalStrength)}"
+                    setSignalStrengthText="@{viewModel.selectedDeviceStateFlow.signalStrength}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/battery_level"/>
 
+                <Button
+                    android:id="@+id/connect_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{() -> viewModel.onConnectionChangeClick()}"
+                    android:text="Connect"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/signal_strength"/>
 
+                <Button
+                    android:id="@+id/settings_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Settings"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/connect_button"/>
+
+                <Button
+                    android:id="@+id/alarm_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Alarm"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/settings_button"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-
         </com.google.android.material.card.MaterialCardView>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/devices"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/device_card"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

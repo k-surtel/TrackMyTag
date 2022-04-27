@@ -1,7 +1,9 @@
 package com.ks.trackmytag.ui.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ks.trackmytag.data.Device
@@ -29,6 +31,16 @@ class DeviceIconAdapter(private val clickListener: DeviceIconClickListener)
                 return ViewHolder(binding)
             }
         }
+    }
+}
+
+class EntriesDiffCallback : DiffUtil.ItemCallback<Device>() {
+    override fun areItemsTheSame(oldItem: Device, newItem: Device): Boolean {
+        return oldItem.address == newItem.address
+    }
+    @SuppressLint("DiffUtilEquals")
+    override fun areContentsTheSame(oldItem: Device, newItem: Device): Boolean {
+        return oldItem == newItem
     }
 }
 

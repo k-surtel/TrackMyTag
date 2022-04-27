@@ -121,12 +121,11 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
 
     fun deleteDevice(device: Device) = viewModelScope.launch { repository.deleteDevice(device) }
 
-    fun onConnectionChangeClick(device: Device) {
-        val connectionState = deviceStates.connectionStates[device.address]
-
-        if (connectionState == State.CONNECTED)
-            disconnectDevice(device)
-        else connectWithDevice(device)
+    fun onConnectionChangeClick() {
+        if (selectedDeviceStateFlow.value == null) return
+        if (selectedDeviceStateFlow.value!!.connectionState == State.CONNECTED)
+            disconnectDevice(selectedDeviceStateFlow.value!!)
+        else connectWithDevice(selectedDeviceStateFlow.value!!)
     }
 
     private fun connectWithDevice(device: Device) =

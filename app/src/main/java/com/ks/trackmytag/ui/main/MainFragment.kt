@@ -23,10 +23,6 @@ import com.ks.trackmytag.R
 import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.databinding.FragmentMainBinding
-import com.ks.trackmytag.ui.adapters.DeviceClickListener
-import com.ks.trackmytag.ui.adapters.DeviceIconAdapter
-import com.ks.trackmytag.ui.adapters.DeviceIconClickListener
-import com.ks.trackmytag.ui.adapters.DevicesAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
@@ -56,21 +52,11 @@ class MainFragment : Fragment() {
         binding.deviceList.adapter = viewModel.iconsAdapter
 
 
-        val adapter = DevicesAdapter(viewModel.deviceStates, DeviceClickListener(
-            connectClickListener = { viewModel.onConnectionChangeClick(it) },
-            alarmClickListener = { viewModel.deviceAlarm(it) },
-            deleteClickListener = { onDeleteDeviceClicked(it) }
-        ))
-
-        binding.devices.adapter = adapter
-
         lifecycleScope.launch { viewModel.savedDevices.collectLatest {
-            adapter.submitList(it)
             viewModel.iconsAdapter.submitList(it)
         } }
 
         lifecycleScope.launch { viewModel.deviceChanged.collect {
-            adapter.notifyItemChanged(it)
             viewModel.iconsAdapter.notifyItemChanged(it)
         } }
 
