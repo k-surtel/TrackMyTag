@@ -2,7 +2,7 @@ package com.ks.trackmytag.data
 
 import android.util.Log
 import com.ks.trackmytag.bluetooth.BleManager
-import com.ks.trackmytag.bluetooth.connection.ConnectionState
+import com.ks.trackmytag.bluetooth.connection.DeviceState
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.data.database.DevicesDao
 import com.ks.trackmytag.data.preferences.PreferencesManager
@@ -19,8 +19,8 @@ class DeviceRepositoryImpl @Inject constructor(
 
     override fun setupBle() { bleManager.setupBle() }
 
-    override fun getConnectionStateFlow(): StateFlow<ConnectionState> {
-        return bleManager.getConnectionStateFlow()
+    override fun getDeviceStateUpdateFlow(): SharedFlow<DeviceState> {
+        return bleManager.getDeviceStateUpdateFlow()
     }
 
     override fun getSavedDevices() = devicesDao.getSavedDevices().map {
@@ -33,7 +33,7 @@ class DeviceRepositoryImpl @Inject constructor(
         bleManager.getConnectionStatesList().forEach { connectionState ->
             val device = deviceList.find { it.address == connectionState.address }
             device?.let {
-                if(connectionState.state != null) it.connectionState = connectionState.state!!
+                if(connectionState.connectionState != null) it.connectionState = connectionState.connectionState!!
             }
         }
 
@@ -86,9 +86,5 @@ class DeviceRepositoryImpl @Inject constructor(
 
     override fun deviceAlarm(device: Device) {
         bleManager.deviceAlarm(device)
-    }
-
-    override fun getSharedFlow(): SharedFlow<ConnectionState> {
-        return bleManager.sharedFlow
     }
 }

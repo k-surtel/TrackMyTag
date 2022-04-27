@@ -52,7 +52,7 @@ class MainFragment : Fragment() {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) { viewModel.setupBle() }
             }
-        
+
         binding.deviceList.adapter = viewModel.iconsAdapter
 
 
@@ -73,21 +73,6 @@ class MainFragment : Fragment() {
             adapter.notifyItemChanged(it)
             viewModel.iconsAdapter.notifyItemChanged(it)
         } }
-
-        lifecycleScope.launch {
-            viewModel.sharedFlow.collectLatest { connectionState ->
-                Log.d(TAG, "onCreateView: shared flow collected")
-                if (connectionState.address != null && connectionState.state != null) {
-                    val device = viewModel.iconsAdapter.currentList.find { it.address == connectionState.address }
-                    device?.let {
-                        Log.d(TAG, "onCreateView: device state changed")
-                        it.connectionState = connectionState.state!!
-
-                        viewModel.iconsAdapter.notifyItemChanged(viewModel.iconsAdapter.currentList.indexOf(it))
-                    }
-                }
-            }
-        }
 
         lifecycleScope.launch { viewModel.showScanErrorMessage.collectLatest { showScanErrorMessage(it) } }
 

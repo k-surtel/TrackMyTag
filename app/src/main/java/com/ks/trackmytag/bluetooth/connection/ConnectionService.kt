@@ -20,8 +20,7 @@ class ConnectionService(private val context: Context) {
     private val alarms = mutableMapOf<String, Boolean>()
     private val coroutines = mutableMapOf<String, Job>()
 
-    fun getConnectionStateFlow(): StateFlow<ConnectionState> =
-        BluetoothGattCallback.connectionStateFlow.asStateFlow()
+    fun getDeviceStateUpdateFlow(): SharedFlow<DeviceState> = BluetoothGattCallback.deviceStateUpdateFlow
 
     @SuppressLint("MissingPermission")
     suspend fun connectWithDevice(device: BluetoothDevice) {
@@ -35,7 +34,7 @@ class ConnectionService(private val context: Context) {
             }
 
             gatt?.let {
-                coroutines.put(device.address, setConnectionSignalChecking(it))
+                //coroutines.put(device.address, setConnectionSignalChecking(it))
             }
         }
     }

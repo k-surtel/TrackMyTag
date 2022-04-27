@@ -3,17 +3,16 @@ package com.ks.trackmytag.bluetooth
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import com.ks.trackmytag.bluetooth.connection.BluetoothGattCallback
-import com.ks.trackmytag.bluetooth.connection.ConnectionState
+import com.ks.trackmytag.bluetooth.connection.DeviceState
 import com.ks.trackmytag.bluetooth.connection.ConnectionService
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.bluetooth.scanning.ScanService
 import com.ks.trackmytag.data.Device
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "TRACKTAGBleManager"
@@ -25,10 +24,8 @@ class BleManager @Inject constructor(@ApplicationContext context: Context) {
     private val scanService = ScanService(context)
     private val connectionService = ConnectionService(context)
 
-    val sharedFlow = BluetoothGattCallback.sharedFlow
-
-    fun getConnectionStatesList(): List<ConnectionState> {
-        return BluetoothGattCallback.connectionStates.toList()
+    fun getConnectionStatesList(): List<DeviceState> {
+        return BluetoothGattCallback.deviceStates.toList()
     }
 
     fun setupBle() {
@@ -46,8 +43,8 @@ class BleManager @Inject constructor(@ApplicationContext context: Context) {
         return device
     }
 
-    fun getConnectionStateFlow(): StateFlow<ConnectionState> =
-        connectionService.getConnectionStateFlow()
+    fun getDeviceStateUpdateFlow(): SharedFlow<DeviceState> =
+        connectionService.getDeviceStateUpdateFlow()
 
     suspend fun connectWithDevice(device: Device, scanTime: Long) {
         var bluetoothDevice = device.bluetoothDevice

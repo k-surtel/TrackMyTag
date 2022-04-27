@@ -4,7 +4,6 @@ import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import androidx.lifecycle.*
 import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
@@ -38,77 +37,41 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     // Saved devices
     val savedDevices = repository.getSavedDevices()
     val deviceStates = DeviceStates(mutableMapOf(), mutableMapOf(), mutableMapOf(), mutableMapOf())
-    private val _connectionStateFlow = repository.getConnectionStateFlow() // TODO change for regular flow
     private val _deviceChanged = MutableSharedFlow<Int>()
     val deviceChanged = _deviceChanged.asSharedFlow()
 
     private val _selectedDeviceStateFlow = MutableStateFlow<Device?>(null)
     val selectedDeviceStateFlow = _selectedDeviceStateFlow.asStateFlow()
 
-    val sharedFlow = repository.getSharedFlow()
-
     val iconsAdapter = DeviceIconAdapter(DeviceIconClickListener {
         chooseDevice(it)
     })
 
-    init {
-        //setupConnectionStateObserver()
-        //observeSharedFlow()
-    }
+    init { observeDeviceStates() }
 
-//    private fun mockDatabase() = viewModelScope.launch {
-//        repository.getSavedDevicesCount().collectLatest { devicesCount ->
-//            if (devicesCount < 3) {
-//                repository.saveDevice(Device(null, "Devvv", "addr", "#d61c60"))
-//                repository.saveDevice(Device(null, "Example", "addr", "#754a7d"))
-//                repository.saveDevice(Device(null, "Cobytu", "addr", "#283d28"))
-//                repository.saveDevice(Device(null, "Ehhhh", "addr", "#fcb103"))
-//            }
-//        }
-//    }
+    private fun observeDeviceStates() = viewModelScope.launch {
+        repository.getDeviceStateUpdateFlow().collectLatest { deviceState ->
+            if (deviceState.address != null) {
+                val device = iconsAdapter.currentList.find { it.address == deviceState.address }
+                if (device != null) {
 
-    private fun observeSharedFlow() = viewModelScope.launch {
-        repository.getSharedFlow().collectLatest {
-            Log.d(TAG, "observeSharedFlow: state = ${it.state}")
-            Log.d(TAG, "observeSharedFlow: signal = ${it.signalStrength}")
-            Log.d(TAG, "observeSharedFlow: alarm = ${it.alarm}")
-            Log.d(TAG, "observeSharedFlow: battery = ${it.battery}")
+                    deviceState.connectionState?.let {
+                        device.connectionState = it
+                    }
 
-            
-            it.state?.let { state ->
-                deviceStates.connectionStates[it.address!!] = state
+                    deviceState.signalStrength?.let {
+                        // TODO
+                    }
 
-                repository.getSavedDevicesAddresses().collectLatest { addresses ->
-                    val changedDeviceIndex = addresses.indexOf(it.address)
-                    if (changedDeviceIndex != -1) _deviceChanged.emit(changedDeviceIndex)
-                }
-            }
-        }
-    }
+                    deviceState.batteryLevel?.let {
+                        //TODO
+                    }
 
-    private fun setupConnectionStateObserver() = viewModelScope.launch {
-        _connectionStateFlow.collectLatest { connectionState ->
-            connectionState.state?.let {
-                deviceStates.connectionStates[connectionState.address!!] = it
-            }
+                    deviceState.alarm?.let {
+                        //TODO
+                    }
 
-            connectionState.signalStrength?.let {
-                Log.d(TAG, "signal strenght = $it")
-                deviceStates.signalStrength[connectionState.address!!] = it
-            }
-
-            connectionState.battery?.let {
-                deviceStates.batteryStates[connectionState.address!!] = it
-            }
-
-            connectionState.alarm?.let {
-                deviceStates.alarm[connectionState.address!!] = it
-            }
-
-            connectionState.address?.let {
-                repository.getSavedDevicesAddresses().collectLatest { addresses ->
-                    val changedDeviceIndex = addresses.indexOf(it)
-                    if (changedDeviceIndex != -1) _deviceChanged.emit(changedDeviceIndex)
+                    iconsAdapter.notifyItemChanged(iconsAdapter.currentList.indexOf(device))
                 }
             }
         }

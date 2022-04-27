@@ -14,6 +14,8 @@ data class Device(
 ) {
     @Ignore var bluetoothDevice: BluetoothDevice? = null
     @Ignore var connectionState: State = State.DISCONNECTED
+    @Ignore var signalStrength: Int = -1
+    @Ignore var batteryLevel: Int = -1
 }
 
 enum class State {

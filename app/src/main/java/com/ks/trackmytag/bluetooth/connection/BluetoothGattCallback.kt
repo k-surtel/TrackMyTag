@@ -4,9 +4,9 @@ import android.bluetooth.*
 import android.bluetooth.BluetoothGattCallback
 import android.util.Log
 import com.ks.trackmytag.data.State
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.util.*
@@ -16,12 +16,10 @@ private const val TAG = "TRACKTAGBluetoothGattCallback"
 
 object BluetoothGattCallback : BluetoothGattCallback() {
 
-    val connectionStates = mutableListOf<ConnectionState>()
+    val deviceStates = mutableListOf<DeviceState>()
 
-    var connectionStateFlow = MutableStateFlow(ConnectionState())
-
-    private val _sharedFlow = MutableSharedFlow<ConnectionState>()
-    val sharedFlow = _sharedFlow.asSharedFlow()
+    private val _deviceStateUpdateFlow = MutableSharedFlow<DeviceState>()
+    val deviceStateUpdateFlow = _deviceStateUpdateFlow.asSharedFlow()
 
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
         if (gatt == null) return
@@ -35,30 +33,17 @@ object BluetoothGattCallback : BluetoothGattCallback() {
                 else -> State.UNKNOWN
             }
 
-            val connectionState2 = ConnectionState(
-                address = gatt.device.address,
-                state = state
-            )
+            var deviceState = deviceStates.find { it.address == gatt.device.address }
+            if (deviceState == null) {
+                deviceState = DeviceState(address = gatt.device.address, connectionState = state)
+                deviceStates.add(deviceState)
+            } else deviceState.connectionState = state
 
-            connectionStateFlow.value = ConnectionState(
-                address = gatt.device.address,
-                state = state
-            )
-
-            GlobalScope.launch {
-                _sharedFlow.emit(connectionState2)
-            }
-
-            var connectionState = connectionStates.find { it.address == gatt.device.address }
-            if (connectionState == null) {
-                connectionState = ConnectionState(address = gatt.device.address, state = state)
-                connectionStates.add(connectionState)
-                Log.d(TAG, "onConnectionStateChange: new connectionstate added to list")
-            }
-            else {
-                connectionState.state = state
-                Log.d(TAG, "onConnectionStateChange: connectionstate updated")
-                Log.d(TAG, "onConnectionStateChange: new state in list: ${connectionStates[0].state}")
+            CoroutineScope(Dispatchers.IO).launch {
+                _deviceStateUpdateFlow.emit(DeviceState(
+                    address = gatt.device.address,
+                    connectionState = state
+                ))
             }
 
         } else Log.e(TAG, "Connection state change failed due to status $status")
@@ -69,7 +54,7 @@ object BluetoothGattCallback : BluetoothGattCallback() {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             readBatteryLevel(gatt)
             enableButtonPressedNotification(gatt)
-            gatt.readRemoteRssi()
+            //gatt.readRemoteRssi()
         } else Log.e(TAG, "Service discovery failed due to status $status")
     }
 
@@ -79,10 +64,19 @@ object BluetoothGattCallback : BluetoothGattCallback() {
                 Log.d(TAG, "onCharacteristicRead: ${characteristic.uuid}")
 
                 if(characteristic.uuid == UUID.fromString(BATTERY_LEVEL_CHARACTERISTIC)) {
-                    connectionStateFlow.value = ConnectionState(
-                        address = gatt.device.address,
-                        battery = characteristic.value.first().toInt()
-                    )
+
+                    var deviceState = deviceStates.find { it.address == gatt.device.address }
+                    if (deviceState == null) {
+                        deviceState = DeviceState(address = gatt.device.address, batteryLevel = characteristic.value.first().toInt())
+                        deviceStates.add(deviceState)
+                    } else deviceState.batteryLevel = characteristic.value.first().toInt()
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        _deviceStateUpdateFlow.emit(DeviceState(
+                            address = gatt.device.address,
+                            batteryLevel = characteristic.value.first().toInt()
+                        ))
+                    }
                 }
             }
 
@@ -112,10 +106,18 @@ object BluetoothGattCallback : BluetoothGattCallback() {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             Log.d(TAG, "onReadRemoteRssi: $rssi")
 
-            connectionStateFlow.value = ConnectionState(
-                address = gatt?.device?.address,
-                signalStrength = abs(rssi)
-            )
+            var deviceState = deviceStates.find { it.address == gatt?.device?.address }
+            if (deviceState == null) {
+                deviceState = DeviceState(address = gatt?.device?.address, signalStrength = abs(rssi))
+                deviceStates.add(deviceState)
+            } else deviceState.signalStrength = abs(rssi)
+
+            CoroutineScope(Dispatchers.IO).launch {
+                _deviceStateUpdateFlow.emit(DeviceState(
+                    address = gatt?.device?.address,
+                    signalStrength = abs(rssi)
+                ))
+            }
         }
     }
 
