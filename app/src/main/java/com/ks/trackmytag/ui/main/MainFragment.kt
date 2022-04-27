@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -51,11 +52,8 @@ class MainFragment : Fragment() {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) { viewModel.setupBle() }
             }
-
-        val iconsAdapter = DeviceIconAdapter(DeviceIconClickListener {
-            viewModel.chooseDevice(it)
-        })
-        binding.deviceList.adapter = iconsAdapter
+        
+        binding.deviceList.adapter = viewModel.iconsAdapter
 
 
         val adapter = DevicesAdapter(viewModel.deviceStates, DeviceClickListener(
@@ -68,17 +66,32 @@ class MainFragment : Fragment() {
 
         lifecycleScope.launch { viewModel.savedDevices.collectLatest {
             adapter.submitList(it)
-            iconsAdapter.submitList(it)
+            viewModel.iconsAdapter.submitList(it)
         } }
+
+        lifecycleScope.launch { viewModel.deviceChanged.collect {
+            adapter.notifyItemChanged(it)
+            viewModel.iconsAdapter.notifyItemChanged(it)
+        } }
+
+        lifecycleScope.launch {
+            viewModel.sharedFlow.collectLatest { connectionState ->
+                Log.d(TAG, "onCreateView: shared flow collected")
+                if (connectionState.address != null && connectionState.state != null) {
+                    val device = viewModel.iconsAdapter.currentList.find { it.address == connectionState.address }
+                    device?.let {
+                        Log.d(TAG, "onCreateView: device state changed")
+                        it.connectionState = connectionState.state!!
+
+                        viewModel.iconsAdapter.notifyItemChanged(viewModel.iconsAdapter.currentList.indexOf(it))
+                    }
+                }
+            }
+        }
 
         lifecycleScope.launch { viewModel.showScanErrorMessage.collectLatest { showScanErrorMessage(it) } }
 
         lifecycleScope.launch { viewModel.showScanDevices.collectLatest { showFoundDevices(it) } }
-
-        lifecycleScope.launch { viewModel.deviceChanged.collect {
-            adapter.notifyItemChanged(it)
-            iconsAdapter.notifyItemChanged(it)
-        } }
 
         lifecycleScope.launch { viewModel.requestPermission.collectLatest { requestPermission(permissionResultLauncher, it) } }
 

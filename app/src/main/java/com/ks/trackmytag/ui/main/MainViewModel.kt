@@ -12,6 +12,8 @@ import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.data.DeviceRepository
 import com.ks.trackmytag.data.DeviceStates
 import com.ks.trackmytag.data.State
+import com.ks.trackmytag.ui.adapters.DeviceIconAdapter
+import com.ks.trackmytag.ui.adapters.DeviceIconClickListener
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -36,17 +38,22 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     // Saved devices
     val savedDevices = repository.getSavedDevices()
     val deviceStates = DeviceStates(mutableMapOf(), mutableMapOf(), mutableMapOf(), mutableMapOf())
-    private val _connectionStateFlow = repository.getConnectionStateFlow()
+    private val _connectionStateFlow = repository.getConnectionStateFlow() // TODO change for regular flow
     private val _deviceChanged = MutableSharedFlow<Int>()
     val deviceChanged = _deviceChanged.asSharedFlow()
 
     private val _selectedDeviceStateFlow = MutableStateFlow<Device?>(null)
     val selectedDeviceStateFlow = _selectedDeviceStateFlow.asStateFlow()
 
+    val sharedFlow = repository.getSharedFlow()
+
+    val iconsAdapter = DeviceIconAdapter(DeviceIconClickListener {
+        chooseDevice(it)
+    })
 
     init {
-        setupConnectionStateObserver()
-        observeSharedFlow()
+        //setupConnectionStateObserver()
+        //observeSharedFlow()
     }
 
 //    private fun mockDatabase() = viewModelScope.launch {
@@ -69,10 +76,11 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
 
             
             it.state?.let { state ->
-                if (it.address == selectedDeviceStateFlow.value?.address) {
-                    val deviceState = selectedDeviceStateFlow.value
-                    deviceState!!.connectionState = state
-                    _selectedDeviceStateFlow.value = deviceState
+                deviceStates.connectionStates[it.address!!] = state
+
+                repository.getSavedDevicesAddresses().collectLatest { addresses ->
+                    val changedDeviceIndex = addresses.indexOf(it.address)
+                    if (changedDeviceIndex != -1) _deviceChanged.emit(changedDeviceIndex)
                 }
             }
         }
