@@ -4,13 +4,11 @@ import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import androidx.lifecycle.*
 import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.data.DeviceRepository
-import com.ks.trackmytag.data.DeviceStates
 import com.ks.trackmytag.data.State
 import com.ks.trackmytag.ui.adapters.DeviceIconAdapter
 import com.ks.trackmytag.ui.adapters.DeviceIconClickListener
@@ -37,47 +35,46 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     val showScanDevices = _showScanDevices.asSharedFlow()
 
     // Saved devices
-    val savedDevices = repository.getSavedDevices()
-    val deviceStates = DeviceStates(mutableMapOf(), mutableMapOf(), mutableMapOf(), mutableMapOf())
-    private val _deviceChanged = MutableSharedFlow<Int>()
-    val deviceChanged = _deviceChanged.asSharedFlow()
-
+    private val savedDevices = repository.getSavedDevices()
     private val _selectedDeviceStateFlow = MutableStateFlow<Device?>(null)
     val selectedDeviceStateFlow = _selectedDeviceStateFlow.asStateFlow()
 
-    val iconsAdapter = DeviceIconAdapter(DeviceIconClickListener {
+    val adapter = DeviceIconAdapter(DeviceIconClickListener {
         _selectedDeviceStateFlow.value = it
     })
 
-    init { observeDeviceStates() }
+    init {
+        observeDeviceStates()
+
+        viewModelScope.launch {
+            savedDevices.collectLatest {
+                adapter.submitList(it)
+                if (_selectedDeviceStateFlow.value == null && it.isNotEmpty())
+                    _selectedDeviceStateFlow.value = it[0]
+            }
+        }
+    }
 
     private fun observeDeviceStates() = viewModelScope.launch {
         repository.getDeviceStateUpdateFlow().collectLatest { deviceState ->
             if (deviceState.address != null) {
-                val device = iconsAdapter.currentList.find { it.address == deviceState.address }
+                val device = adapter.currentList.find { it.address == deviceState.address }
                 if (device != null) {
 
-                    deviceState.connectionState?.let {
-                        device.connectionState = it
-                    }
+                    deviceState.connectionState?.let { device.connectionState = it }
 
-                    deviceState.signalStrength?.let {
-                        device.signalStrength = it
-                    }
+                    deviceState.signalStrength?.let { device.signalStrength = it }
 
-                    deviceState.batteryLevel?.let {
-                        device.batteryLevel = it
-                    }
+                    deviceState.batteryLevel?.let { device.batteryLevel = it }
 
                     deviceState.alarm?.let {
                         //TODO
                     }
 
-                    if(_selectedDeviceStateFlow.value?.address == deviceState.address) {
+                    if(_selectedDeviceStateFlow.value?.address == deviceState.address)
                         _selectedDeviceStateFlow.forceUpdate(device)
-                    }
 
-                    iconsAdapter.notifyItemChanged(iconsAdapter.currentList.indexOf(device))
+                    adapter.notifyItemChanged(adapter.currentList.indexOf(device))
                 }
             }
         }

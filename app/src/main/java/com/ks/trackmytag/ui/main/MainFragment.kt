@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -24,7 +23,6 @@ import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.databinding.FragmentMainBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -49,16 +47,7 @@ class MainFragment : Fragment() {
                 if (result.resultCode == Activity.RESULT_OK) { viewModel.setupBle() }
             }
 
-        binding.deviceList.adapter = viewModel.iconsAdapter
-
-
-        lifecycleScope.launch { viewModel.savedDevices.collectLatest {
-            viewModel.iconsAdapter.submitList(it)
-        } }
-
-        lifecycleScope.launch { viewModel.deviceChanged.collect {
-            viewModel.iconsAdapter.notifyItemChanged(it)
-        } }
+        binding.deviceList.adapter = viewModel.adapter
 
         lifecycleScope.launch { viewModel.showScanErrorMessage.collectLatest { showScanErrorMessage(it) } }
 

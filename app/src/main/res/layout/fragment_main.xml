@@ -33,6 +33,8 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/margin_medium"
             app:cardElevation="0dp"
+            android:backgroundTint="@color/card_background"
+            app:cardCornerRadius="10dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/device_list">
@@ -43,52 +45,108 @@
 
                 <TextView
                     android:id="@+id/device_name"
-                    android:text="@{viewModel.selectedDeviceStateFlow.name}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_medium"
+                    android:text="@{viewModel.selectedDeviceStateFlow.name}"
+                    android:textSize="@dimen/large_text"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_color"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"/>
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="Device one"/>
 
                 <TextView
                     android:id="@+id/battery_level"
                     setBatteryLevelText="@{viewModel.selectedDeviceStateFlow.batteryLevel}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_medium"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/device_name"/>
+                    app:layout_constraintTop_toBottomOf="@id/device_name"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    tools:text="Battery level: 99%"/>
 
                 <TextView
                     android:id="@+id/signal_strength"
                     setSignalStrengthText="@{viewModel.selectedDeviceStateFlow.signalStrength}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/battery_level"/>
+                    app:layout_constraintTop_toBottomOf="@id/battery_level"
+                    tools:text="Signal strength: 83%"/>
 
                 <Button
                     android:id="@+id/connect_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:textColor="@color/accent"
+                    android:drawableTint="@color/accent"
+                    android:layout_marginVertical="@dimen/margin_medium"
+                    android:layout_marginStart="@dimen/margin_medium"
+                    android:drawableTop="@drawable/icon_link"
                     android:onClick="@{() -> viewModel.onConnectionChangeClick()}"
                     android:text="Connect"
+                    setVisibleWhenDisconnected="@{viewModel.selectedDeviceStateFlow.connectionState}"
+                    android:textSize="@dimen/button_text"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/settings_button"
+                    app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/signal_strength"/>
+                    app:layout_constraintTop_toBottomOf="@id/signal_strength" />
+
+                <Button
+                    android:id="@+id/disconnect_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:textColor="@color/accent"
+                    android:drawableTint="@color/accent"
+                    android:layout_marginVertical="@dimen/margin_medium"
+                    android:layout_marginStart="@dimen/margin_medium"
+                    android:drawableTop="@drawable/icon_disconnect"
+                    android:onClick="@{() -> viewModel.onConnectionChangeClick()}"
+                    android:text="Disconnect"
+                    setVisibleWhenConnected="@{viewModel.selectedDeviceStateFlow.connectionState}"
+                    android:textSize="@dimen/button_text"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/settings_button"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/signal_strength" />
 
                 <Button
                     android:id="@+id/settings_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    style="?android:attr/borderlessButtonStyle"
                     android:text="Settings"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/connect_button"/>
+                    android:textColor="@color/accent"
+                    android:drawableTint="@color/accent"
+                    android:textSize="@dimen/button_text"
+                    android:drawableTop="@drawable/icon_settings"
+                    app:layout_constraintBottom_toBottomOf="@+id/connect_button"
+                    app:layout_constraintEnd_toStartOf="@+id/alarm_button"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toEndOf="@+id/connect_button" />
 
                 <Button
                     android:id="@+id/alarm_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/margin_medium"
+                    style="?android:attr/borderlessButtonStyle"
                     android:text="Alarm"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/settings_button"/>
+                    setButtonTint="@{viewModel.selectedDeviceStateFlow.connectionState}"
+                    android:textSize="@dimen/button_text"
+                    android:drawableTop="@drawable/icon_alarm"
+                    app:layout_constraintBottom_toBottomOf="@+id/settings_button"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toEndOf="@+id/settings_button" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

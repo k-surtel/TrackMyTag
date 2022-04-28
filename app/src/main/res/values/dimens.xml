@@ -4,5 +4,6 @@
     <dimen name="margin_medium">16dp</dimen>
     <dimen name="margin_large">30dp</dimen>
 
-    <dimen name="large_text">34sp</dimen>
+    <dimen name="large_text">36sp</dimen>
+    <dimen name="button_text">12sp</dimen>
 </resources>

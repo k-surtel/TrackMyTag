@@ -13,4 +13,11 @@
     <color name="medium_gray">#6e6e6e</color>
 
 
+
+    <color name="card_background">#E0E0E0</color>
+    <color name="text_color">#525252</color>
+    <color name="text_color_dim">#999999</color>
+    <color name="accent">#221985</color>
+
+
 </resources>
