@@ -13,6 +13,7 @@ import android.widget.*
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.databinding.DataBindingUtil
+import androidx.databinding.DataBindingUtil.setContentView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -20,7 +21,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.ks.trackmytag.R
 import com.ks.trackmytag.bluetooth.RequestManager
-import com.ks.trackmytag.data.Device
+import com.ks.trackmytag.databinding.DialogSettingsBinding
 import com.ks.trackmytag.databinding.FragmentMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -48,6 +49,8 @@ class MainFragment : Fragment() {
             }
 
         binding.deviceList.adapter = viewModel.adapter
+
+        binding.settingsButton.setOnClickListener { showItagSettings() }
 
         lifecycleScope.launch { viewModel.showScanErrorMessage.collectLatest { showScanErrorMessage(it) } }
 
@@ -143,15 +146,33 @@ class MainFragment : Fragment() {
             .show()
     }
 
-    private fun onDeleteDeviceClicked(device: Device) {
+    private fun onDeleteDeviceClicked() {
         MaterialAlertDialogBuilder(requireContext())
             .setMessage(R.string.delete_device_alert)
             .setNegativeButton(R.string.no) { dialog, _ ->
                 dialog.dismiss()
             }
             .setPositiveButton(R.string.yes) { _, _ ->
-                viewModel.deleteDevice(device)
+                viewModel.deleteDevice()
             }
+            .show()
+    }
+
+    private fun showItagSettings() {
+        val binding: DialogSettingsBinding = DataBindingUtil.inflate(LayoutInflater.from(context),
+            R.layout.dialog_settings, null, false)
+
+        binding.viewModel = viewModel
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Settings")
+            .setView(binding.root)
+            .setNeutralButton(R.string.cancel, null)
+            .setNegativeButton(R.string.delete_device) { _, _ ->
+                onDeleteDeviceClicked()
+            }
+            .setPositiveButton(R.string.ok, null)
+            .setCancelable(false)
             .show()
     }
 }

@@ -116,7 +116,12 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
         _scanDevices.clear()
     }
 
-    fun deleteDevice(device: Device) = viewModelScope.launch { repository.deleteDevice(device) }
+    fun deleteDevice() = viewModelScope.launch {
+        selectedDeviceStateFlow.value?.let {
+            repository.deleteDevice(it)
+            // TODO change selected device
+        }
+    }
 
     fun onConnectionChangeClick() {
         if (selectedDeviceStateFlow.value == null) return
