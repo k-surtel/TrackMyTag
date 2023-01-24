@@ -22,18 +22,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/device_icon"
             setBackgroundColor="@{device.color}"
             setIconAlpha="@{device.connectionState}"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:background="@drawable/device_icon"
             android:contentDescription="@{device.name}"
+            android:text="@{device.name.substring(0,1)}"
+            android:textAllCaps="false"
             android:onClick="@{() -> clickListener.onDeviceIconClick(device)}"
-            android:src="@drawable/icon_disconnect"
+            android:stateListAnimator="@null"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+
 
     </com.google.android.material.card.MaterialCardView>
 

@@ -28,11 +28,10 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/device_name"
                 android:text="@{viewModel.selectedDeviceStateFlow.name}"/>
-
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/device_name_layout2"
+            android:id="@+id/color_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -40,11 +39,11 @@
             app:layout_constraintTop_toBottomOf="@id/device_name_layout">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/device_name2"
+                android:id="@+id/color"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/device_name"/>
-
+                android:hint="@string/color"
+                android:text="@{viewModel.selectedDeviceStateFlow.color}"/>
         </com.google.android.material.textfield.TextInputLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

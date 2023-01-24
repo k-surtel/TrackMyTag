@@ -71,6 +71,10 @@ class DeviceRepositoryImpl @Inject constructor(
         bleManager.connectWithDevice(device, getScanTime())
     }
 
+    override suspend fun updateDevice(device: Device) {
+        devicesDao.insertDevice(device)
+    }
+
     override suspend fun deleteDevice(device: Device) {
         devicesDao.deleteDevice(device)
         bleManager.disconnectDevice(device)

@@ -3,11 +3,12 @@ package com.ks.trackmytag.ui.adapters
 import android.graphics.Color
 import android.view.View
 import android.widget.Button
-import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.graphics.ColorUtils
 import androidx.databinding.BindingAdapter
 import com.ks.trackmytag.R
 import com.ks.trackmytag.data.State
+import kotlinx.android.synthetic.main.dialog_settings.view.*
 
 @BindingAdapter("setSignalStrengthText")
 fun setSignalStrengthText(view: View, signalStrength: Int?) {
@@ -41,13 +42,19 @@ fun setVisibleWhenDisconnected(view: View, state: State?) {
 
 @BindingAdapter("setBackgroundColor")
 fun setBackgroundColor(view: View, color: String?) {
-    if (color != null) (view as ImageButton).background.setTint(Color.parseColor(color))
+    if (color != null) {
+        val color = Color.parseColor(color)
+        (view as Button).background.setTint(color)
+
+        if (ColorUtils.calculateLuminance(color) < 0.5) view.setTextColor(Color.WHITE)
+        else view.setTextColor(Color.BLACK)
+    }
 }
 
 @BindingAdapter("setIconAlpha")
 fun setIconAlpha(view: View, state: State?) {
-    if (state == State.CONNECTED) (view as ImageButton).alpha = 1F
-    else (view as ImageButton).alpha = 0.3F
+    if (state == State.CONNECTED) (view as Button).alpha = 1F
+    else (view as Button).alpha = 0.3F
 }
 
 @BindingAdapter("setButtonTint")

@@ -22,6 +22,8 @@ interface DeviceRepository {
 
     suspend fun saveDevice(device: Device)
 
+    suspend fun updateDevice(device: Device)
+
     suspend fun deleteDevice(device: Device)
 
     suspend fun connectWithDevice(device: Device)

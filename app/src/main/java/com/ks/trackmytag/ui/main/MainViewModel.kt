@@ -110,7 +110,7 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     }
 
     fun saveDevice(index: Int, name: String) = viewModelScope.launch {
-        val device = Device(null, name, _scanDevices[index].address, "#6e6e6e")
+        val device = Device(null, name, _scanDevices[index].address)
         device.bluetoothDevice = _scanDevices[index]
         repository.saveDevice(device)
         _scanDevices.clear()
@@ -120,6 +120,18 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
         selectedDeviceStateFlow.value?.let {
             repository.deleteDevice(it)
             // TODO change selected device
+        }
+    }
+
+    fun updateDevice(name: String, color: String) = viewModelScope.launch {
+        selectedDeviceStateFlow.value?.let {
+            if (it.name != name || it.color != color) {
+                it.name = name
+                it.color = color
+                repository.updateDevice(it)
+                _selectedDeviceStateFlow.forceUpdate(it)
+                adapter.notifyItemChanged(adapter.currentList.indexOf(it))
+            }
         }
     }
 

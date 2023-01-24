@@ -24,6 +24,7 @@ import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.databinding.DialogSettingsBinding
 import com.ks.trackmytag.databinding.FragmentMainBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.dialog_settings.view.*
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -164,14 +165,27 @@ class MainFragment : Fragment() {
 
         binding.viewModel = viewModel
 
-        val dialog = MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Settings")
+//        val iconDialog = MaterialAlertDialogBuilder(requireContext())
+//            .setTitle("Choose icon") // todo move to string
+//            .setView(R.layout.dialog_choose_icon)
+//            .setNeutralButton(R.string.cancel, null)
+
+//        binding.icon.setOnClickListener {
+//            iconDialog.show()
+//        }
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.settings)
             .setView(binding.root)
             .setNeutralButton(R.string.cancel, null)
             .setNegativeButton(R.string.delete_device) { _, _ ->
                 onDeleteDeviceClicked()
             }
-            .setPositiveButton(R.string.ok, null)
+            .setPositiveButton(R.string.ok) { _, _ ->
+                val name = binding.deviceName.text.toString()
+                val color = binding.color.text.toString()
+                viewModel.updateDevice(name, color)
+            }
             .setCancelable(false)
             .show()
     }
