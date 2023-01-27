@@ -63,6 +63,9 @@ dependencies {
     // DataStore
     implementation "androidx.datastore:datastore-preferences:1.0.0"
 
+    // Color picker
+    implementation 'com.github.QuadFlask:colorpicker:0.0.15'
+
     // Tests
     androidTestImplementation 'junit:junit:4.13.2'
     androidTestImplementation "com.google.truth:truth:1.1.3"

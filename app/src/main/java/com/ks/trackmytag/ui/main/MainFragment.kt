@@ -3,6 +3,7 @@ package com.ks.trackmytag.ui.main
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.text.InputType
 import android.view.LayoutInflater
@@ -12,21 +13,23 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.graphics.ColorUtils
 import androidx.databinding.DataBindingUtil
-import androidx.databinding.DataBindingUtil.setContentView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.flask.colorpicker.ColorPickerView
+import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.ks.trackmytag.R
 import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.databinding.DialogSettingsBinding
 import com.ks.trackmytag.databinding.FragmentMainBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.dialog_settings.view.*
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+
 
 private const val TAG = "TRACKTAGMainFragment"
 
@@ -174,6 +177,26 @@ class MainFragment : Fragment() {
 //            iconDialog.show()
 //        }
 
+        val colorPicker = ColorPickerDialogBuilder
+            .with(context)
+            .setTitle(R.string.choose_color)
+            .initialColor(Color.RED)
+            .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
+            .density(12)
+            .showAlphaSlider(false)
+            .setPositiveButton(R.string.ok) { _, selectedColor, allColors ->
+                binding.colorButton.background.setTint(selectedColor)
+                binding.colorButton.text = "#" + Integer.toHexString(selectedColor)
+                if (ColorUtils.calculateLuminance(selectedColor) < 0.5) binding.colorButton.setTextColor(Color.WHITE)
+                else binding.colorButton.setTextColor(Color.BLACK)
+            }
+            .setNegativeButton(R.string.cancel) { _, _ -> }
+            .build()
+
+        binding.colorButton.setOnClickListener {
+            colorPicker.show()
+        }
+
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.settings)
             .setView(binding.root)
@@ -183,7 +206,7 @@ class MainFragment : Fragment() {
             }
             .setPositiveButton(R.string.ok) { _, _ ->
                 val name = binding.deviceName.text.toString()
-                val color = binding.color.text.toString()
+                val color = binding.colorButton.text.toString()
                 viewModel.updateDevice(name, color)
             }
             .setCancelable(false)

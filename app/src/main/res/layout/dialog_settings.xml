@@ -30,21 +30,15 @@
                 android:text="@{viewModel.selectedDeviceStateFlow.name}"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/color_layout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        <Button
+            android:id="@+id/color_button"
+            setBackgroundColor="@{viewModel.selectedDeviceStateFlow.color}"
+            android:text="@{viewModel.selectedDeviceStateFlow.color}"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:stateListAnimator="@null"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/device_name_layout">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/color"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/color"
-                android:text="@{viewModel.selectedDeviceStateFlow.color}"/>
-        </com.google.android.material.textfield.TextInputLayout>
+            app:layout_constraintTop_toBottomOf="@id/device_name_layout"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

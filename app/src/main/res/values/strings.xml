@@ -37,5 +37,6 @@
     <string name="signal_strength">Signal strength: %1$d</string>
     <string name="device_name">Device name</string>
     <string name="color">Color</string>
+    <string name="choose_color">Choose color</string>
 
 </resources>
