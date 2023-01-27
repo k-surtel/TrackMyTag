@@ -71,3 +71,12 @@ fun setButtonTint(view: View, state: State?) {
         }
     }
 }
+
+@BindingAdapter("alarmEnabled")
+fun alarmEnabled(view: View, state: State?) {
+    if(state == State.CONNECTED) {
+        (view as Button).isEnabled = true
+    } else {
+        (view as Button).isEnabled = false
+    }
+}

@@ -4,6 +4,7 @@ import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.lifecycle.*
 import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.bluetooth.scanning.ScanResults
@@ -148,7 +149,7 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     private fun disconnectDevice(device: Device) =
         viewModelScope.launch { repository.disconnectDevice(device) }
 
-    fun deviceAlarm(device: Device) = repository.deviceAlarm(device)
+    fun deviceAlarm() = selectedDeviceStateFlow.value?.let { repository.deviceAlarm(it) }
 
     fun handlePermissionsAndBluetooth(context: Context) {
         if (!RequestManager.checkPermissionGranted(context, Manifest.permission.ACCESS_FINE_LOCATION))
