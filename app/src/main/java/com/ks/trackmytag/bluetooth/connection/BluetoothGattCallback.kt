@@ -3,6 +3,10 @@ package com.ks.trackmytag.bluetooth.connection
 import android.bluetooth.*
 import android.bluetooth.BluetoothGattCallback
 import android.util.Log
+import com.ks.trackmytag.bluetooth.BATTERY_LEVEL_CHARACTERISTIC
+import com.ks.trackmytag.bluetooth.BATTERY_SERVICE
+import com.ks.trackmytag.bluetooth.BUTTON_CHARACTERISTIC
+import com.ks.trackmytag.bluetooth.BUTTON_SERVICE
 import com.ks.trackmytag.data.State
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

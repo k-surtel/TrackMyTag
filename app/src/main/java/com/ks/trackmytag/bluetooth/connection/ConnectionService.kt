@@ -7,6 +7,8 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
 import android.os.Build
+import com.ks.trackmytag.bluetooth.ALERT_LEVEL_CHARACTERISTIC
+import com.ks.trackmytag.bluetooth.IMMEDIATE_ALERT_SERVICE
 import com.ks.trackmytag.bluetooth.RequestManager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -56,7 +58,9 @@ class ConnectionService(private val context: Context) {
         val gatt = gatts[address]
         gatt?.let { gatt ->
             val service = gatt.getService(UUID.fromString(IMMEDIATE_ALERT_SERVICE))
-            val characteristic = service?.getCharacteristic(UUID.fromString(ALERT_LEVEL_CHARACTERISTIC))
+            val characteristic = service?.getCharacteristic(UUID.fromString(
+                ALERT_LEVEL_CHARACTERISTIC
+            ))
 
             characteristic?.let {
                 if (alarms[address] == null) alarms[address] = false

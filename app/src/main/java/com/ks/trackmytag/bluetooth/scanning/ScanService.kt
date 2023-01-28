@@ -2,7 +2,6 @@ package com.ks.trackmytag.bluetooth.scanning
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanSettings
