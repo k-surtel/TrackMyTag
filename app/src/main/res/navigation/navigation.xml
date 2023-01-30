@@ -11,12 +11,13 @@
         android:label="MainFragment" >
 
         <action
-            android:id="@+id/action_mainFragment_to_preferencesFragment"
-            app:destination="@id/preferencesFragment" />
+            android:id="@+id/action_mainFragment_to_settingsActivity"
+            app:destination="@id/settingsActivity" />
     </fragment>
-    <fragment
-        android:id="@+id/preferencesFragment"
-        android:name="com.ks.trackmytag.ui.preferences.PreferencesFragment"
-        android:label="PreferencesFragment" />
+
+    <activity
+        android:id="@+id/settingsActivity"
+        android:name="com.ks.trackmytag.ui.preferences.SettingsActivity"
+        android:label="Settings" />
 
 </navigation>
