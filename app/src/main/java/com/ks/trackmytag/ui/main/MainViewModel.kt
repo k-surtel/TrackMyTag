@@ -59,8 +59,10 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
         viewModelScope.launch {
             savedDevices.collectLatest {
                 adapter.submitList(it)
-                if (_selectedDeviceStateFlow.value == null && it.isNotEmpty())
+                if (_selectedDeviceStateFlow.value == null && it.isNotEmpty()) {
                     _selectedDeviceStateFlow.value = it[0]
+                    it[0].selected = true
+                }
             }
         }
         //todo delet
