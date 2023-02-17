@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 private const val TAG = "TRACKTAGMainViewModel"
 
 @HiltViewModel
@@ -40,8 +41,16 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     private val _selectedDeviceStateFlow = MutableStateFlow<Device?>(null)
     val selectedDeviceStateFlow = _selectedDeviceStateFlow.asStateFlow()
 
+    // Button pressed
+    private val _buttonClick = MutableSharedFlow<Boolean>()
+    val buttonClick = _buttonClick.asSharedFlow()
+
     val adapter = DeviceIconAdapter(DeviceIconClickListener {
+        _selectedDeviceStateFlow.value?.selected = false
+        _selectedDeviceStateFlow.value?.let { it1 -> notifyAdapterItemChanged(it1) }
+        it.selected = true
         _selectedDeviceStateFlow.value = it
+        notifyAdapterItemChanged(it)
     })
 
     init {
@@ -54,6 +63,8 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
                     _selectedDeviceStateFlow.value = it[0]
             }
         }
+        //todo delet
+        //batchAddDevs()
     }
 
     private fun observeDeviceStates() = viewModelScope.launch {
@@ -68,8 +79,10 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
 
                     deviceState.batteryLevel?.let { device.batteryLevel = it }
 
-                    deviceState.alarm?.let {
-                        //TODO
+                    deviceState.buttonClick?.let {
+                        Log.d(TAG, "BUTTON CLICK CLICK")
+                        device.buttonClick = it
+                        _buttonClick.emit(it)
                     }
 
                     if(_selectedDeviceStateFlow.value?.address == deviceState.address)
@@ -110,11 +123,27 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
         }
     }
 
+    fun notifyAdapterItemChanged(device: Device) {
+        adapter.notifyItemChanged(adapter.currentList.indexOf(device))
+    }
+
+    //todo delet this
+    fun batchAddDevs() {
+        saveDevice(0, "devone")
+        saveDevice(1, "devtwo")
+    }
+
     fun saveDevice(index: Int, name: String) = viewModelScope.launch {
-        val device = Device(null, name, _scanDevices[index].address)
-        device.bluetoothDevice = _scanDevices[index]
-        repository.saveDevice(device)
-        _scanDevices.clear()
+        if (_scanDevices.size <= index) {
+            // todo error adding device
+            // todo delet code below
+            repository.saveDevice(Device(null, name, "hehe"))
+        } else {
+            val device = Device(null, name, _scanDevices[index].address)
+            device.bluetoothDevice = _scanDevices[index]
+            repository.saveDevice(device)
+            _scanDevices.clear()
+        }
     }
 
     fun deleteDevice() = viewModelScope.launch {

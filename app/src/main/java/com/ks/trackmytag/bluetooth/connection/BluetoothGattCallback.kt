@@ -101,9 +101,21 @@ object BluetoothGattCallback : BluetoothGattCallback() {
         // this will get called anytime you perform a read or write characteristic operation
         //we’ve enabled notifications or indications on a characteristic, any incoming notification or indication
         // is delivered via BluetoothGattCallback’s onCharacteristicChanged() callback
-        Log.d(TAG, "onCharacteristicChanged: CALLED")
-        Log.d(TAG, "char: ${characteristic?.uuid}")
-        Log.d(TAG, "char value: ${characteristic?.value}")
+
+        if (characteristic?.uuid == UUID.fromString(BUTTON_CHARACTERISTIC)) {
+            Log.d(TAG, "char value: ${characteristic?.value}")
+
+            var deviceState = deviceStates.find { it.address == gatt?.device?.address }
+            if (deviceState == null) {
+                deviceState = DeviceState(address = gatt?.device?.address, buttonClick = true)
+                deviceStates.add(deviceState)
+            } else if (deviceState.buttonClick == null) deviceState.buttonClick = true
+            else deviceState.buttonClick = !deviceState.buttonClick!!
+
+            CoroutineScope(Dispatchers.IO).launch {
+                _deviceStateUpdateFlow.emit(deviceState)
+            }
+        }
     }
 
     override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {

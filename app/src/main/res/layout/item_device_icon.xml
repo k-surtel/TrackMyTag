@@ -10,6 +10,7 @@
         <variable
             name="clickListener"
             type="com.ks.trackmytag.ui.adapters.DeviceIconClickListener" />
+        <import type="android.view.View"/>
     </data>
 
     <com.google.android.material.card.MaterialCardView
@@ -22,22 +23,37 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/device_icon"
-            setBackgroundColor="@{device.color}"
-            setIconAlpha="@{device.connectionState}"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:background="@drawable/device_icon"
-            android:contentDescription="@{device.name}"
-            android:text="@{device.name.substring(0,1)}"
-            android:textAllCaps="false"
-            android:onClick="@{() -> clickListener.onDeviceIconClick(device)}"
-            android:stateListAnimator="@null"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
 
+            <ImageView
+                android:layout_height="70dp"
+                android:layout_width="70dp"
+                android:background="@drawable/device_icon_selected"
+                setBackgroundColor="@{device.color}"
+                android:visibility="@{device.selected ? View.VISIBLE : View.INVISIBLE}"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
 
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/device_icon"
+                setBackgroundColor="@{device.color}"
+                setIconAlpha="@{device.connectionState}"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/device_icon"
+                android:contentDescription="@{device.name}"
+                android:text="@{device.name.substring(0,1)}"
+                android:textAllCaps="false"
+                android:onClick="@{() -> clickListener.onDeviceIconClick(device)}"
+                android:stateListAnimator="@null"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </com.google.android.material.card.MaterialCardView>
 

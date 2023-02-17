@@ -7,5 +7,5 @@ data class DeviceState(
     var connectionState: State? = null,
     var signalStrength: Int? = null,
     var batteryLevel: Int? = null,
-    var alarm: Boolean? = null
+    var buttonClick: Boolean? = null
 )

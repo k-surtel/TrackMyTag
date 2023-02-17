@@ -16,6 +16,8 @@ data class Device(
     @Ignore var connectionState: State = State.DISCONNECTED
     @Ignore var signalStrength: Int = -1
     @Ignore var batteryLevel: Int = -1
+    @Ignore var buttonClick: Boolean = false
+    @Ignore var selected: Boolean = false
 }
 
 enum class State {

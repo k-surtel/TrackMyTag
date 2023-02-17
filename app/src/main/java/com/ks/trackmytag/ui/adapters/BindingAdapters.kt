@@ -1,8 +1,11 @@
 package com.ks.trackmytag.ui.adapters
 
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.graphics.ColorUtils
 import androidx.databinding.BindingAdapter
@@ -43,11 +46,18 @@ fun setVisibleWhenDisconnected(view: View, state: State?) {
 @BindingAdapter("setBackgroundColor")
 fun setBackgroundColor(view: View, color: String?) {
     if (color != null) {
-        val color = Color.parseColor(color)
-        (view as Button).background.setTint(color)
 
-        if (ColorUtils.calculateLuminance(color) < 0.5) view.setTextColor(Color.WHITE)
-        else view.setTextColor(Color.BLACK)
+        val color = Color.parseColor(color)
+
+        if (view is ImageView) {
+            val drawable: GradientDrawable = view.background as GradientDrawable
+            drawable.mutate()
+            drawable.setStroke(5, color)
+        } else if (view is Button) {
+            view.background.setTint(color)
+            if (ColorUtils.calculateLuminance(color) < 0.5) view.setTextColor(Color.WHITE)
+            else view.setTextColor(Color.BLACK)
+        }
     }
 }
 

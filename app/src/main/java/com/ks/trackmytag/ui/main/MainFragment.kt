@@ -4,6 +4,9 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.graphics.Color
+import android.media.Ringtone
+import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import android.view.LayoutInflater
@@ -38,6 +41,11 @@ class MainFragment : Fragment() {
 
     private val viewModel: MainViewModel by viewModels()
 
+
+    // todo
+    lateinit var notification: Uri
+    lateinit var r: Ringtone
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
         val binding: FragmentMainBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false)
@@ -52,6 +60,10 @@ class MainFragment : Fragment() {
                 if (result.resultCode == Activity.RESULT_OK) { viewModel.setupBle() }
             }
 
+        ///todo
+        notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM) // it may be null!!!
+        r = RingtoneManager.getRingtone(context, notification)
+
         binding.deviceList.adapter = viewModel.adapter
 
         binding.settingsButton.setOnClickListener { showItagSettings() }
@@ -63,6 +75,11 @@ class MainFragment : Fragment() {
         lifecycleScope.launch { viewModel.requestPermission.collectLatest { requestPermission(permissionResultLauncher, it) } }
 
         lifecycleScope.launch { viewModel.requestBluetoothEnabled.collectLatest { requestBluetoothEnabled(bluetoothResultLauncher) } }
+
+        lifecycleScope.launch { viewModel.buttonClick.collectLatest {
+            if (it) playPhoneAlarm()
+            else stopPhoneAlarm()
+        } }
 
         if (RequestManager.checkBleSupport(requireContext())) viewModel.handlePermissionsAndBluetooth(requireContext())
 
@@ -211,5 +228,15 @@ class MainFragment : Fragment() {
             }
             .setCancelable(false)
             .show()
+    }
+
+
+    //todo
+    fun playPhoneAlarm() {
+        r.play()
+    }
+
+    fun stopPhoneAlarm() {
+        r.stop()
     }
 }
