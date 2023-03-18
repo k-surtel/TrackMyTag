@@ -2,8 +2,8 @@ package com.ks.trackmytag.ui.adapters
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.LayerDrawable
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -65,6 +65,34 @@ fun setBackgroundColor(view: View, color: String?) {
 fun setIconAlpha(view: View, state: State?) {
     if (state == State.CONNECTED) (view as Button).alpha = 1F
     else (view as Button).alpha = 0.3F
+}
+
+@BindingAdapter("setIconSize")
+fun setIconSize(view: View, state: State?) {
+    val params: ViewGroup.LayoutParams = view.layoutParams
+
+    when (state) {
+        State.CONNECTED -> {
+            if (view is Button) {
+                params.width = 180
+                params.height = 180
+            } else if (view is ImageView) {
+                params.width = 210
+                params.height = 210
+            }
+        }
+        else -> {
+            if (view is Button) {
+                params.width = 150
+                params.height = 150
+            } else if (view is ImageView) {
+                params.width = 180
+                params.height = 180
+            }
+        }
+    }
+
+    view.layoutParams = params
 }
 
 @BindingAdapter("setButtonTint")

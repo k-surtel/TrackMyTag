@@ -32,6 +32,7 @@
                 android:layout_width="70dp"
                 android:background="@drawable/device_icon_selected"
                 setBackgroundColor="@{device.color}"
+                setIconSize="@{device.connectionState}"
                 android:visibility="@{device.selected ? View.VISIBLE : View.INVISIBLE}"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
@@ -40,6 +41,7 @@
                 android:id="@+id/device_icon"
                 setBackgroundColor="@{device.color}"
                 setIconAlpha="@{device.connectionState}"
+                setIconSize="@{device.connectionState}"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:background="@drawable/device_icon"
