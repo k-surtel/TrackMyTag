@@ -10,7 +10,8 @@ data class Device(
     @PrimaryKey(autoGenerate = true) val id: Int? = null,
     var name: String,
     val address: String,
-    var color: String = "#FF4E2695"
+    var color: String = "#FF4E2695",
+    var ringtone: String = ""
 ) {
     @Ignore var bluetoothDevice: BluetoothDevice? = null
     @Ignore var connectionState: State = State.DISCONNECTED

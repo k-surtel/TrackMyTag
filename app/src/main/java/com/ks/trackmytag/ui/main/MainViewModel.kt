@@ -42,7 +42,7 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     val selectedDeviceStateFlow = _selectedDeviceStateFlow.asStateFlow()
 
     // Button pressed
-    private val _buttonClick = MutableSharedFlow<Boolean>()
+    private val _buttonClick = MutableSharedFlow<String>()
     val buttonClick = _buttonClick.asSharedFlow()
 
     val adapter = DeviceIconAdapter(DeviceIconClickListener {
@@ -84,7 +84,8 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
                     deviceState.buttonClick?.let {
                         Log.d(TAG, "BUTTON CLICK CLICK")
                         device.buttonClick = it
-                        _buttonClick.emit(it)
+                        if (it) _buttonClick.emit(device.ringtone)
+                        else _buttonClick.emit("")
                     }
 
                     if(_selectedDeviceStateFlow.value?.address == deviceState.address)
@@ -155,11 +156,13 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
         }
     }
 
-    fun updateDevice(name: String, color: String) = viewModelScope.launch {
+    fun updateDevice(name: String, color: String, ringtone: String) = viewModelScope.launch {
         selectedDeviceStateFlow.value?.let {
-            if (it.name != name || it.color != color) {
+            if (it.name != name || it.color != color || it.ringtone != ringtone) {
                 it.name = name
                 it.color = color
+                it.ringtone = ringtone
+
                 repository.updateDevice(it)
                 _selectedDeviceStateFlow.forceUpdate(it)
                 adapter.notifyItemChanged(adapter.currentList.indexOf(it))

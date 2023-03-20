@@ -16,6 +16,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.ColorUtils
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -25,6 +26,7 @@ import androidx.navigation.fragment.findNavController
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
 import com.ks.trackmytag.R
 import com.ks.trackmytag.bluetooth.RequestManager
 import com.ks.trackmytag.databinding.DialogSettingsBinding
@@ -40,11 +42,7 @@ private const val TAG = "TRACKTAGMainFragment"
 class MainFragment : Fragment() {
 
     private val viewModel: MainViewModel by viewModels()
-
-
-    // todo
-    lateinit var notification: Uri
-    lateinit var r: Ringtone
+    private lateinit var ringtone: Ringtone
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
@@ -60,10 +58,6 @@ class MainFragment : Fragment() {
                 if (result.resultCode == Activity.RESULT_OK) { viewModel.setupBle() }
             }
 
-        ///todo
-        notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM) // it may be null!!!
-        r = RingtoneManager.getRingtone(context, notification)
-
         binding.deviceList.adapter = viewModel.adapter
 
         binding.settingsButton.setOnClickListener { showItagSettings() }
@@ -76,10 +70,7 @@ class MainFragment : Fragment() {
 
         lifecycleScope.launch { viewModel.requestBluetoothEnabled.collectLatest { requestBluetoothEnabled(bluetoothResultLauncher) } }
 
-        lifecycleScope.launch { viewModel.buttonClick.collectLatest {
-            if (it) playPhoneAlarm()
-            else stopPhoneAlarm()
-        } }
+        lifecycleScope.launch { viewModel.buttonClick.collectLatest { phoneAlarm(it) } }
 
         if (RequestManager.checkBleSupport(requireContext())) viewModel.handlePermissionsAndBluetooth(requireContext())
 
@@ -194,7 +185,37 @@ class MainFragment : Fragment() {
 //            iconDialog.show()
 //        }
 
-        val colorPicker = ColorPickerDialogBuilder
+        binding.colorButton.setOnClickListener {
+            getColorPicker(binding).show()
+        }
+
+        binding.deviceRingtone.setOnFocusChangeListener { v, hasFocus ->
+            if (hasFocus) getRingtonesDialog(binding.deviceRingtone)
+        }
+
+        binding.deviceRingtone.setOnClickListener {
+            getRingtonesDialog(binding.deviceRingtone)
+        }
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.settings)
+            .setView(binding.root)
+            .setNeutralButton(R.string.cancel, null)
+            .setNegativeButton(R.string.delete_device) { _, _ ->
+                onDeleteDeviceClicked()
+            }
+            .setPositiveButton(R.string.ok) { _, _ ->
+                val name = binding.deviceName.text.toString()
+                val color = binding.colorButton.text.toString()
+                val ringtone = binding.deviceRingtone.text.toString()
+                viewModel.updateDevice(name, color, ringtone)
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun getColorPicker(binding: DialogSettingsBinding): AlertDialog {
+        return ColorPickerDialogBuilder
             .with(context)
             .setTitle(R.string.choose_color)
             .initialColor(Color.RED)
@@ -209,34 +230,46 @@ class MainFragment : Fragment() {
             }
             .setNegativeButton(R.string.cancel) { _, _ -> }
             .build()
+    }
 
-        binding.colorButton.setOnClickListener {
-            colorPicker.show()
-        }
+    private fun getRingtonesDialog(ringtoneField: TextInputEditText): AlertDialog {
+        val xList = getRingtones().keys.toList()
+        val xAdapter = ArrayAdapter(requireContext(), R.layout.item_spinner, xList)
 
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.settings)
-            .setView(binding.root)
-            .setNeutralButton(R.string.cancel, null)
-            .setNegativeButton(R.string.delete_device) { _, _ ->
-                onDeleteDeviceClicked()
+        return MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.choose_ringtone)
+            .setAdapter(xAdapter) { dialog, which ->
+                ringtoneField.setText(xList[which])
             }
-            .setPositiveButton(R.string.ok) { _, _ ->
-                val name = binding.deviceName.text.toString()
-                val color = binding.colorButton.text.toString()
-                viewModel.updateDevice(name, color)
-            }
-            .setCancelable(false)
             .show()
     }
 
+    private fun getRingtones(): Map<String, String> {
+        val ringtoneManager = RingtoneManager(activity)
+        ringtoneManager.setType(RingtoneManager.TYPE_RINGTONE)
+        val cursor = ringtoneManager.cursor
 
-    //todo
-    fun playPhoneAlarm() {
-        r.play()
+        val ringtones = HashMap<String, String>()
+        while (cursor.moveToNext()) {
+            val ringtoneTitle = cursor.getString(RingtoneManager.TITLE_COLUMN_INDEX)
+            val ringtoneUri = cursor.getString(RingtoneManager.URI_COLUMN_INDEX) + "/" + cursor.getString(RingtoneManager.ID_COLUMN_INDEX)
+            ringtones[ringtoneTitle] = ringtoneUri
+        }
+
+        return ringtones
     }
 
-    fun stopPhoneAlarm() {
-        r.stop()
+    private fun phoneAlarm(ringtoneName: String) {
+        val ringtoneUri = getRingtones()[ringtoneName]
+        if (!this::ringtone.isInitialized)
+            ringtone = RingtoneManager.getRingtone(context, Uri.parse(ringtoneUri))
+
+
+        if (ringtoneName.isNotBlank()) {
+            if (ringtone.isPlaying) ringtone.stop()
+            ringtone = RingtoneManager.getRingtone(context, Uri.parse(ringtoneUri))
+            ringtone.play()
+        } else ringtone.stop()
+
     }
 }

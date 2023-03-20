@@ -14,13 +14,23 @@
         android:layout_height="match_parent"
         android:padding="@dimen/margin_medium">
 
+        <Button
+            android:id="@+id/color_button"
+            setBackgroundColor="@{viewModel.selectedDeviceStateFlow.color}"
+            android:text="@{viewModel.selectedDeviceStateFlow.color}"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stateListAnimator="@null"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/device_name_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/color_button">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/device_name"
@@ -30,15 +40,23 @@
                 android:text="@{viewModel.selectedDeviceStateFlow.name}"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <Button
-            android:id="@+id/color_button"
-            setBackgroundColor="@{viewModel.selectedDeviceStateFlow.color}"
-            android:text="@{viewModel.selectedDeviceStateFlow.color}"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/device_ringtone_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:stateListAnimator="@null"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/device_name_layout"/>
+            app:layout_constraintTop_toBottomOf="@id/device_name_layout">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/device_ringtone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/ringtone"
+                android:inputType="none"
+                android:textIsSelectable="true"
+                android:text="@{viewModel.selectedDeviceStateFlow.ringtone}"/>
+        </com.google.android.material.textfield.TextInputLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
