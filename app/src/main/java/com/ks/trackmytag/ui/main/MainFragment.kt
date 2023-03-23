@@ -62,6 +62,8 @@ class MainFragment : Fragment() {
 
         binding.settingsButton.setOnClickListener { showItagSettings() }
 
+        lifecycleScope.launch { viewModel.emptyDevicesList.collectLatest { emptyDevicesListUpdateScreen(binding, it) } }
+
         lifecycleScope.launch { viewModel.showScanErrorMessage.collectLatest { showScanErrorMessage(it) } }
 
         lifecycleScope.launch { viewModel.showScanDevices.collectLatest { showFoundDevices(it) } }
@@ -271,5 +273,10 @@ class MainFragment : Fragment() {
             ringtone.play()
         } else ringtone.stop()
 
+    }
+
+    private fun emptyDevicesListUpdateScreen(binding: FragmentMainBinding, noDevicesSaved: Boolean) {
+        if (noDevicesSaved) binding.deviceCard.visibility = View.GONE
+        else binding.deviceCard.visibility = View.VISIBLE
     }
 }

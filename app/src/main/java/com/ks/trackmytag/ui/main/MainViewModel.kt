@@ -40,6 +40,8 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     private val savedDevices = repository.getSavedDevices()
     private val _selectedDeviceStateFlow = MutableStateFlow<Device?>(null)
     val selectedDeviceStateFlow = _selectedDeviceStateFlow.asStateFlow()
+    private val _emptyDevicesList = MutableStateFlow(false)
+    val emptyDevicesList = _emptyDevicesList.asStateFlow()
 
     // Button pressed
     private val _buttonClick = MutableSharedFlow<String>()
@@ -63,6 +65,8 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
                     _selectedDeviceStateFlow.value = it[0]
                     it[0].selected = true
                 }
+
+                _emptyDevicesList.value = it.isEmpty()
             }
         }
         //todo delet
