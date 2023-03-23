@@ -12,14 +12,23 @@ import com.ks.trackmytag.databinding.ItemDeviceIconBinding
 class DeviceIconAdapter(private val clickListener: DeviceIconClickListener)
     : ListAdapter<Device, DeviceIconAdapter.ViewHolder>(EntriesDiffCallback()) {
 
+    private var selectedDeviceAddress: String = ""
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder.from(parent)
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) =
-        holder.bind(getItem(position), clickListener)
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        if (selectedDeviceAddress.isNotBlank() && selectedDeviceAddress.equals(getItem(position).address)) {
+            holder.bind(getItem(position), clickListener, true)
+            selectedDeviceAddress = ""
+        } else holder.bind(getItem(position), clickListener)
+
+    }
+
 
     class ViewHolder private constructor(private val binding: ItemDeviceIconBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(device: Device, deviceIconClickListener: DeviceIconClickListener) {
+        fun bind(device: Device, deviceIconClickListener: DeviceIconClickListener, selected: Boolean = false) {
             binding.device = device
+            binding.selected = selected
             binding.clickListener = deviceIconClickListener
             binding.executePendingBindings()
         }
@@ -31,6 +40,11 @@ class DeviceIconAdapter(private val clickListener: DeviceIconClickListener)
                 return ViewHolder(binding)
             }
         }
+    }
+
+    fun notifyItemChangedKeepSelection(deviceAddress: String, position: Int) {
+        selectedDeviceAddress = deviceAddress
+        this.notifyItemChanged(position)
     }
 }
 

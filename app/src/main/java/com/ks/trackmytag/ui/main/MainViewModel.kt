@@ -165,7 +165,7 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
 
                 repository.updateDevice(it)
                 _selectedDeviceStateFlow.forceUpdate(it)
-                adapter.notifyItemChanged(adapter.currentList.indexOf(it))
+                adapter.notifyItemChangedKeepSelection(it.address, adapter.currentList.indexOf(it))
             }
         }
     }

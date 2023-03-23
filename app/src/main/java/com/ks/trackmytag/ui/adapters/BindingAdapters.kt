@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.core.graphics.ColorUtils
 import androidx.databinding.BindingAdapter
 import com.ks.trackmytag.R
+import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.data.State
 import kotlinx.android.synthetic.main.dialog_settings.view.*
 
@@ -112,9 +113,13 @@ fun setButtonTint(view: View, state: State?) {
 
 @BindingAdapter("alarmEnabled")
 fun alarmEnabled(view: View, state: State?) {
-    if(state == State.CONNECTED) {
-        (view as Button).isEnabled = true
-    } else {
-        (view as Button).isEnabled = false
-    }
+    (view as Button).isEnabled = state == State.CONNECTED
+}
+
+@BindingAdapter(value = ["device", "selected"], requireAll = false)
+fun setSelectedIndicationVisibility(view: ImageView, device: Device, selected: Boolean) {
+    if (device.selected) view.visibility = View.VISIBLE
+    else view.visibility = View.INVISIBLE
+
+    if (selected) view.visibility = View.VISIBLE
 }

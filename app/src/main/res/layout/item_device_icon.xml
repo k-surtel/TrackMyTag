@@ -8,6 +8,9 @@
             name="device"
             type="com.ks.trackmytag.data.Device" />
         <variable
+            name="selected"
+            type="Boolean" />
+        <variable
             name="clickListener"
             type="com.ks.trackmytag.ui.adapters.DeviceIconClickListener" />
         <import type="android.view.View"/>
@@ -33,7 +36,8 @@
                 android:background="@drawable/device_icon_selected"
                 setBackgroundColor="@{device.color}"
                 setIconSize="@{device.connectionState}"
-                android:visibility="@{device.selected ? View.VISIBLE : View.INVISIBLE}"
+                device="@{device}"
+                selected="@{selected}"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
 
