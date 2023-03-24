@@ -55,10 +55,10 @@ class MainFragment : Fragment() {
                 ringtone = RingtoneManager.getRingtone(context, Uri.parse(ringtoneUri))
                 alertingDevices.add(device)
                 ringtone.play()
-                dialog = MaterialAlertDialogBuilder(context)
+                dialog = MaterialAlertDialogBuilder(context, R.style.AlertDialogTheme)
                     .setTitle(device.name)
                     .setCancelable(false)
-                    .setNegativeButton(R.string.ok) { _, _ ->
+                    .setPositiveButton(R.string.ok) { _, _ ->
                         stopAlert(device)
                     }.show()
             }
