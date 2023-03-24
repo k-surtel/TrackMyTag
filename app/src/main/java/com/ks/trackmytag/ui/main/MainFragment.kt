@@ -2,6 +2,7 @@ package com.ks.trackmytag.ui.main
 
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.media.Ringtone
@@ -29,6 +30,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.ks.trackmytag.R
 import com.ks.trackmytag.bluetooth.RequestManager
+import com.ks.trackmytag.data.Device
 import com.ks.trackmytag.databinding.DialogSettingsBinding
 import com.ks.trackmytag.databinding.FragmentMainBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -42,7 +44,37 @@ private const val TAG = "TRACKTAGMainFragment"
 class MainFragment : Fragment() {
 
     private val viewModel: MainViewModel by viewModels()
-    private lateinit var ringtone: Ringtone
+    object Alert {
+        private var alertingDevices = mutableListOf<Device>()
+        private lateinit var ringtone: Ringtone
+        private lateinit var dialog: AlertDialog
+
+        fun alert(context: Context, device: Device, ringtoneUri: String?) {
+            if (alertingDevices.contains(device)) stopAlert(device)
+            else if (!ringtoneUri.isNullOrBlank()) {
+                ringtone = RingtoneManager.getRingtone(context, Uri.parse(ringtoneUri))
+                alertingDevices.add(device)
+                ringtone.play()
+                dialog = MaterialAlertDialogBuilder(context)
+                    .setTitle(device.name)
+                    .setCancelable(false)
+                    .setNegativeButton(R.string.ok) { _, _ ->
+                        stopAlert(device)
+                    }.show()
+            }
+
+        }
+
+        private fun stopAlert(device: Device) {
+            if (alertingDevices.contains(device)) {
+                alertingDevices.remove(device)
+                if (alertingDevices.isEmpty()) {
+                    ringtone.stop()
+                    dialog.dismiss()
+                }
+            }
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
@@ -72,7 +104,12 @@ class MainFragment : Fragment() {
 
         lifecycleScope.launch { viewModel.requestBluetoothEnabled.collectLatest { requestBluetoothEnabled(bluetoothResultLauncher) } }
 
-        lifecycleScope.launch { viewModel.buttonClick.collectLatest { phoneAlarm(it) } }
+        lifecycleScope.launch { viewModel.buttonClick.collectLatest {
+            if (it.ringtone.isNotBlank()) {
+                val ringtoneUri = getRingtones()[it.ringtone]
+                Alert.alert(requireContext(), it, ringtoneUri)
+            }
+        } }
 
         if (RequestManager.checkBleSupport(requireContext())) viewModel.handlePermissionsAndBluetooth(requireContext())
 
@@ -259,20 +296,6 @@ class MainFragment : Fragment() {
         }
 
         return ringtones
-    }
-
-    private fun phoneAlarm(ringtoneName: String) {
-        val ringtoneUri = getRingtones()[ringtoneName]
-        if (!this::ringtone.isInitialized)
-            ringtone = RingtoneManager.getRingtone(context, Uri.parse(ringtoneUri))
-
-
-        if (ringtoneName.isNotBlank()) {
-            if (ringtone.isPlaying) ringtone.stop()
-            ringtone = RingtoneManager.getRingtone(context, Uri.parse(ringtoneUri))
-            ringtone.play()
-        } else ringtone.stop()
-
     }
 
     private fun emptyDevicesListUpdateScreen(binding: FragmentMainBinding, noDevicesSaved: Boolean) {

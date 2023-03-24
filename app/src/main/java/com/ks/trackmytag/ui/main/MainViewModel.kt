@@ -44,7 +44,7 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
     val emptyDevicesList = _emptyDevicesList.asStateFlow()
 
     // Button pressed
-    private val _buttonClick = MutableSharedFlow<String>()
+    private val _buttonClick = MutableSharedFlow<Device>()
     val buttonClick = _buttonClick.asSharedFlow()
 
     val adapter = DeviceIconAdapter(DeviceIconClickListener {
@@ -86,10 +86,8 @@ class MainViewModel @Inject constructor(private val repository: DeviceRepository
                     deviceState.batteryLevel?.let { device.batteryLevel = it }
 
                     deviceState.buttonClick?.let {
-                        Log.d(TAG, "BUTTON CLICK CLICK")
                         device.buttonClick = it
-                        if (it) _buttonClick.emit(device.ringtone)
-                        else _buttonClick.emit("")
+                        _buttonClick.emit(device)
                     }
 
                     if(_selectedDeviceStateFlow.value?.address == deviceState.address)
